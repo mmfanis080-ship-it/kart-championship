@@ -34,9 +34,19 @@ export default async function DriverPage({ params }: { params: Promise<{ id: str
         <Link href="/#standings" className="font-mono text-xs uppercase tracking-widest text-muted-foreground hover:text-primary">
           ← Standings
         </Link>
-        <div className="flex flex-col gap-2">
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary">{driver.team}</p>
-          <h1 className="text-5xl font-black uppercase italic leading-none tracking-tight md:text-6xl">{driver.name}</h1>
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-end">
+          {driver.photo_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={driver.photo_url} alt={driver.name} className="size-40 rounded-sm border border-border object-cover md:size-52" />
+          ) : (
+            <div aria-hidden className="flex size-40 items-center justify-center rounded-sm border border-border bg-card text-6xl font-black italic text-muted-foreground md:size-52">
+              {driver.name.charAt(0)}
+            </div>
+          )}
+          <div className="flex flex-col gap-2">
+            <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary">{driver.team}</p>
+            <h1 className="text-5xl font-black uppercase italic leading-none tracking-tight md:text-6xl">{driver.name}</h1>
+          </div>
         </div>
 
         <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-sm border border-border bg-border sm:grid-cols-5">

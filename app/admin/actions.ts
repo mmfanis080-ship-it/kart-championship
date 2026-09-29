@@ -83,20 +83,47 @@ export async function createRace(formData: FormData) {
   const supabase = await requireUser()
   const round = count(formData, 'round', 99)
   const name = text(formData, 'name', 80)
-  if (!round || !name) redirect('/admin?error=invalid#results')
+  if (!round || !name) redirect('/admin?error=invalid#calendar')
   const track = optionalText(formData, 'track', 80)
   const race_date = optionalDate(formData, 'race_date')
-  finish(await supabase.from('races').insert({ round, name, track, race_date }).select('id'), 'results')
+  finish(await supabase.from('races').insert({ round, name, track, race_date }).select('id'), 'calendar')
 }
 
 export async function updateRace(formData: FormData) {
   const supabase = await requireUser()
   const id = text(formData, 'id', 64)
   const name = text(formData, 'name', 80)
-  if (!id || !name) redirect('/admin?error=invalid#results')
+  if (!id || !name) redirect('/admin?error=invalid#calendar')
   const track = optionalText(formData, 'track', 80)
   const race_date = optionalDate(formData, 'race_date')
-  finish(await supabase.from('races').update({ name, track, race_date }).eq('id', id).select('id'), 'results')
+  finish(await supabase.from('races').update({ name, track, race_date }).eq('id', id).select('id'), 'calendar')
+}
+
+export async function deleteRace(formData: FormData) {
+  const supabase = await requireUser()
+  const id = text(formData, 'id', 64)
+  if (!id) redirect('/admin?error=invalid#calendar')
+  finish(await supabase.from('races').delete().eq('id', id).select('id'), 'calendar')
+}
+
+const MAX_PHOTO_BYTES = 3 * 1024 * 1024
+const PHOTO_TYPES: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }
+
+export async function uploadDriverPhoto(formData: FormData) {
+  const supabase = await requireUser()
+  const id = text(formData, 'id', 64)
+  const file = formData.get('photo')
+  if (!id || !(file instanceof File) || file.size === 0) redirect('/admin?error=invalid#drivers')
+  if (file.size > MAX_PHOTO_BYTES || !PHOTO_TYPES[file.type]) redirect('/admin?error=photo#drivers')
+
+  const path = `${id}-${Date.now()}.${PHOTO_TYPES[file.type]}`
+  const upload = await supabase.storage.from('driver-photos').upload(path, file, { contentType: file.type })
+  if (upload.error) {
+    console.error('Photo upload failed:', upload.error.message)
+    redirect('/admin?error=photo-upload#drivers')
+  }
+  const { data } = supabase.storage.from('driver-photos').getPublicUrl(path)
+  finish(await supabase.from('drivers').update({ photo_url: data.publicUrl }).eq('id', id).select('id'), 'drivers')
 }
 
 function parseResult(formData: FormData) {

@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Field } from '@/components/admin/driver-form'
 import { fieldClass, labelClass } from '@/components/form-styles'
 import type { ClassifiedResult, Driver, Race } from '@/lib/championship'
-import { addResult, deleteResult, saveResult, updateRace } from '@/app/admin/actions'
+import { addResult, deleteResult, saveResult } from '@/app/admin/actions'
 
 type ResultsEditorProps = {
   race: Race
@@ -16,14 +16,9 @@ export function ResultsEditor({ race, results, drivers }: ResultsEditorProps) {
 
   return (
     <div className="flex flex-col gap-3 rounded-sm border border-border bg-card p-4">
-      <h3 className="text-lg font-black uppercase italic tracking-tight">Round {race.round}</h3>
-      <form action={updateRace} className="grid grid-cols-2 items-end gap-3 md:grid-cols-[1fr_1fr_10rem_auto]">
-        <input type="hidden" name="id" value={race.id} />
-        <Field id={`${race.id}-name`} label="Race" name="name" defaultValue={race.name} maxLength={80} />
-        <Field id={`${race.id}-track`} label="Track" name="track" defaultValue={race.track ?? ''} maxLength={80} required={false} />
-        <Field id={`${race.id}-date`} label="Date" name="race_date" type="date" defaultValue={race.race_date ?? ''} required={false} />
-        <Button type="submit" variant="outline" className="col-span-2 h-10 font-bold uppercase md:col-span-1">Save race</Button>
-      </form>
+      <h3 className="text-lg font-black uppercase italic tracking-tight">
+        Round {race.round} · {race.name}
+      </h3>
 
       {results.length === 0 ? (
         <p className="text-sm text-muted-foreground">No results entered for this round yet.</p>

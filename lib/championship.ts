@@ -6,6 +6,7 @@ export type DriverRow = {
   name: string
   team: string
   points: number
+  photo_url: string | null
 }
 
 export type RaceRow = {
@@ -55,12 +56,12 @@ export type Championship = {
 }
 
 const demoDriverRows: DriverRow[] = [
-  { id: 'd1', name: 'Luca Moretti', team: 'Scuderia Rosso', points: 25 },
-  { id: 'd2', name: 'Emma Hartley', team: 'Apex Kart Works', points: 18 },
-  { id: 'd3', name: 'Mateo Silva', team: 'Velocità Racing', points: 15 },
-  { id: 'd4', name: 'Noah Becker', team: 'Scuderia Rosso', points: 12 },
-  { id: 'd5', name: 'Chloé Laurent', team: 'Grid Zero', points: 10 },
-  { id: 'd6', name: 'Kenji Tanaka', team: 'Apex Kart Works', points: 8 },
+  { id: 'd1', name: 'Luca Moretti', team: 'Scuderia Rosso', points: 25, photo_url: null },
+  { id: 'd2', name: 'Emma Hartley', team: 'Apex Kart Works', points: 18, photo_url: null },
+  { id: 'd3', name: 'Mateo Silva', team: 'Velocità Racing', points: 15, photo_url: null },
+  { id: 'd4', name: 'Noah Becker', team: 'Scuderia Rosso', points: 12, photo_url: null },
+  { id: 'd5', name: 'Chloé Laurent', team: 'Grid Zero', points: 10, photo_url: null },
+  { id: 'd6', name: 'Kenji Tanaka', team: 'Apex Kart Works', points: 8, photo_url: null },
 ]
 const demoRaceRows: RaceRow[] = [{ id: 'r1', round: 1, name: 'Season Opener', track: 'Demo Circuit', race_date: '2026-03-14' }]
 const demoResults: ResultRow[] = demoDriverRows.map((driver, index) => ({
@@ -126,7 +127,7 @@ export async function getChampionship(): Promise<Championship> {
 
   const supabase = await createClient()
   const [drivers, races, results] = await Promise.all([
-    supabase.from('drivers').select('id, name, team, points'),
+    supabase.from('drivers').select('id, name, team, points, photo_url'),
     supabase.from('races').select('id, round, name, track, race_date'),
     supabase.from('results').select('id, driver_id, race_id, position, points'),
   ])
