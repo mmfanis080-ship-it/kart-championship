@@ -79,6 +79,11 @@ function optionalDate(formData: FormData, key: string) {
   return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null
 }
 
+function optionalTime(formData: FormData, key: string) {
+  const value = String(formData.get(key) ?? '').trim()
+  return /^\d{2}:\d{2}$/.test(value) ? value : null
+}
+
 export async function createRace(formData: FormData) {
   const supabase = await requireUser()
   const round = count(formData, 'round', 99)
@@ -86,7 +91,9 @@ export async function createRace(formData: FormData) {
   if (!round || !name) redirect('/admin?error=invalid#calendar')
   const track = optionalText(formData, 'track', 80)
   const race_date = optionalDate(formData, 'race_date')
-  finish(await supabase.from('races').insert({ round, name, track, race_date }).select('id'), 'calendar')
+  const race_time = optionalTime(formData, 'race_time')
+  const details = optionalText(formData, 'details', 120)
+  finish(await supabase.from('races').insert({ round, name, track, race_date, race_time, details }).select('id'), 'calendar')
 }
 
 export async function updateRace(formData: FormData) {
@@ -96,7 +103,9 @@ export async function updateRace(formData: FormData) {
   if (!id || !name) redirect('/admin?error=invalid#calendar')
   const track = optionalText(formData, 'track', 80)
   const race_date = optionalDate(formData, 'race_date')
-  finish(await supabase.from('races').update({ name, track, race_date }).eq('id', id).select('id'), 'calendar')
+  const race_time = optionalTime(formData, 'race_time')
+  const details = optionalText(formData, 'details', 120)
+  finish(await supabase.from('races').update({ name, track, race_date, race_time, details }).eq('id', id).select('id'), 'calendar')
 }
 
 export async function deleteRace(formData: FormData) {
@@ -124,6 +133,23 @@ export async function uploadDriverPhoto(formData: FormData) {
   }
   const { data } = supabase.storage.from('driver-photos').getPublicUrl(path)
   finish(await supabase.from('drivers').update({ photo_url: data.publicUrl }).eq('id', id).select('id'), 'drivers')
+}
+
+export async function uploadTrackImage(formData: FormData) {
+  const supabase = await requireUser()
+  const id = text(formData, 'id', 64)
+  const file = formData.get('image')
+  if (!id || !(file instanceof File) || file.size === 0) redirect('/admin?error=invalid#calendar')
+  if (file.size > MAX_PHOTO_BYTES || !PHOTO_TYPES[file.type]) redirect('/admin?error=photo#calendar')
+
+  const path = `track-${id}-${Date.now()}.${PHOTO_TYPES[file.type]}`
+  const upload = await supabase.storage.from('driver-photos').upload(path, file, { contentType: file.type })
+  if (upload.error) {
+    console.error('Track image upload failed:', upload.error.message)
+    redirect('/admin?error=photo-upload#calendar')
+  }
+  const { data } = supabase.storage.from('driver-photos').getPublicUrl(path)
+  finish(await supabase.from('races').update({ track_image_url: data.publicUrl }).eq('id', id).select('id'), 'calendar')
 }
 
 function parseResult(formData: FormData) {

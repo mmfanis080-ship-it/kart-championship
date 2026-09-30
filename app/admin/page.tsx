@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { DriverForm } from '@/components/admin/driver-form'
 import { PhotoForm } from '@/components/admin/photo-form'
 import { RaceForm } from '@/components/admin/race-form'
+import { TrackImageForm } from '@/components/admin/track-image-form'
 import { ResultsEditor } from '@/components/admin/results-editor'
 import { SectionHeading } from '@/components/section-heading'
 import { SiteHeader } from '@/components/site-header'
@@ -98,7 +99,10 @@ export default async function AdminPage({
         <section aria-labelledby="calendar" className="flex scroll-mt-24 flex-col gap-4">
           <SectionHeading id="calendar" eyebrow="Schedule" title="Calendar" />
           {races.map((race) => (
-            <RaceForm key={race.id} race={race} />
+            <div key={race.id} className="flex flex-col gap-2">
+              <RaceForm race={race} />
+              <TrackImageForm race={race} />
+            </div>
           ))}
           <h3 className="mt-4 font-mono text-xs uppercase tracking-widest text-muted-foreground">Add a race</h3>
           <RaceForm nextRound={nextRound} />
