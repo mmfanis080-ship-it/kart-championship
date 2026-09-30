@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { HeadToHead, type H2HDriver } from '@/components/head-to-head'
 import { SectionHeading } from '@/components/section-heading'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
@@ -19,6 +20,30 @@ export default async function DriverPage({ params }: { params: Promise<{ id: str
 
   const driver = championship.drivers[index]
   const history = driverHistory(championship, id)
+
+  const finishesByDriver = new Map<string, Record<string, number>>()
+  for (const result of championship.results) {
+    const finishes = finishesByDriver.get(result.driver_id) ?? {}
+    finishes[result.race_id] = result.position
+    finishesByDriver.set(result.driver_id, finishes)
+  }
+  const toH2H = (entry: (typeof championship.drivers)[number]): H2HDriver => {
+    const finishes = finishesByDriver.get(entry.id) ?? {}
+    const positions = Object.values(finishes)
+    return {
+      id: entry.id,
+      name: entry.name,
+      team: entry.team,
+      photo_url: entry.photo_url,
+      points: entry.points,
+      wins: entry.wins,
+      podiums: entry.podiums,
+      bestFinish: entry.bestFinish,
+      avgFinish: positions.length ? Math.round((positions.reduce((a, b) => a + b, 0) / positions.length) * 10) / 10 : null,
+      finishes,
+    }
+  }
+  const others = championship.drivers.filter((entry) => entry.id !== id).map(toH2H)
   const stats = [
     { label: 'Position', value: `P${index + 1}` },
     { label: 'Points', value: driver.points },
@@ -57,6 +82,12 @@ export default async function DriverPage({ params }: { params: Promise<{ id: str
             </div>
           ))}
         </dl>
+
+        {others.length > 0 && (
+          <section aria-label="Head to head" className="flex flex-col gap-6">
+            <HeadToHead key={id} current={toH2H(driver)} others={others} />
+          </section>
+        )}
 
         <section aria-labelledby="history" className="flex flex-col gap-6">
           <SectionHeading id="history" eyebrow="Season 2026" title="Race by race" />
