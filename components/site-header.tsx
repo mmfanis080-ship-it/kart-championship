@@ -31,6 +31,12 @@ export function SiteHeader() {
           <Link href="/#results" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground sm:block">
             Results
           </Link>
+          <Link href="/laps" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground sm:block">
+            Laps
+          </Link>
+          <Link href="/rules" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground sm:block">
+            Rules
+          </Link>
           <Link
             href="/admin"
             className="ml-2 flex items-center gap-2 rounded-sm border border-border px-3 py-2 transition-colors hover:border-primary hover:text-primary"
@@ -40,6 +46,20 @@ export function SiteHeader() {
           </Link>
         </nav>
       </div>
+      <nav aria-label="Sections" className="flex gap-1 overflow-x-auto border-t border-border px-3 py-1 text-xs font-semibold uppercase tracking-wide sm:hidden">
+        {[
+          ['Standings', '/#standings'],
+          ['Teams', '/#constructors'],
+          ['Calendar', '/#calendar'],
+          ['Results', '/#results'],
+          ['Laps', '/laps'],
+          ['Rules', '/rules'],
+        ].map(([label, href]) => (
+          <Link key={href} href={href} className="shrink-0 rounded-sm px-3 py-2 text-muted-foreground hover:text-foreground">
+            {label}
+          </Link>
+        ))}
+      </nav>
     </header>
   )
 }
