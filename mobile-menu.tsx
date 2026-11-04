@@ -12,6 +12,7 @@ const links = [
   { label: 'Calendar', href: '/#calendar' },
   { label: 'Race Results', href: '/#results' },
   { label: 'Lap Comparison', href: '/laps' },
+  { label: 'Hall of Fame', href: '/hall-of-fame' },
   { label: 'Head-to-Head', href: '/head-to-head' },
   { label: 'Predictor', href: '/predictor' },
   { label: 'Starting Grid', href: '/starting-grid' },

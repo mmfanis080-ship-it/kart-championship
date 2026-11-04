@@ -1,86 +1,36 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Calendar } from '@/components/calendar'
-import { ChampionshipBattle } from '@/components/championship-battle'
-import { AttendanceOverview } from '@/components/attendance-overview'
-import { buildBattleSeries } from '@/lib/battle'
-import { getAttendanceCounts } from '@/lib/attendance'
-import { ConstructorsTable } from '@/components/constructors-table'
-import { DataNotice } from '@/components/data-notice'
-import { Hero } from '@/components/hero'
-import { NextRaceCard } from '@/components/next-race-card'
-import { Podium } from '@/components/podium'
-import { RaceResults } from '@/components/race-calendar'
-import { SectionHeading } from '@/components/section-heading'
-import { SiteFooter } from '@/components/site-footer'
+import { ArrowLeft, Crown, Trophy } from 'lucide-react'
 import { SiteHeader } from '@/components/site-header'
-import { StandingsTable } from '@/components/standings-table'
-import { classifyRace, getChampionship } from '@/lib/championship'
+import { SiteFooter } from '@/components/site-footer'
 
-export const dynamic = 'force-dynamic'
+export const metadata: Metadata = {
+  title: 'Hall of Fame | Kart Championship',
+  description: "Kart Championship past champions. Fanis won the 2025 Drivers\' Championship.",
+}
 
-export default async function HomePage() {
-  const [championship, attendanceCounts] = await Promise.all([getChampionship(), getAttendanceCounts()])
-  const { drivers, constructors, races, source } = championship
-  const nextRace = races.find((race) => !race.completed)
-  const classifications = Object.fromEntries(races.map((race) => [race.id, classifyRace(championship, race.id)]))
+/** Historical championship records are separate from the live 2026 standings. */
+const champions = [{season: 2025, name: 'FANIS', title: "Drivers' Champion"}] as const
 
-  return (
-    <>
-      <SiteHeader />
-      <DataNotice source={source} />
-      <main>
-        <Hero leader={drivers[0]} runnerUp={drivers[1]} races={races} />
-
-        {nextRace && (
-          <section aria-label="Next race" className="mx-auto max-w-6xl px-4 pt-10 sm:pt-16 md:px-6">
-            <NextRaceCard race={nextRace} />
-          </section>
-        )}
-
-        <section aria-labelledby="standings" className="mx-auto flex max-w-6xl flex-col gap-5 px-4 py-10 sm:gap-8 sm:py-16 md:px-6">
-          <SectionHeading id="standings" eyebrow="Drivers' Championship" title="Leaderboard" />
-          <Podium drivers={drivers} />
-          <StandingsTable drivers={drivers} races={races} results={championship.results} />
-        </section>
-
-        <section aria-labelledby="battle" className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pb-10 sm:gap-6 sm:pb-16 md:px-6">
-          <SectionHeading id="battle" eyebrow="Title race" title="Championship Battle" />
-          <ChampionshipBattle drivers={drivers} series={buildBattleSeries(drivers,races,championship.results)} />
-        </section>
-        <section aria-labelledby="attendance" className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pb-10 sm:gap-6 sm:pb-16 md:px-6">
-          <SectionHeading id="attendance" eyebrow="Next grid" title="Race Attendance" />
-          <AttendanceOverview races={races} counts={attendanceCounts} />
-        </section>
-        <section aria-labelledby="tools" className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pb-10 sm:gap-6 sm:pb-16 md:px-6">
-          <SectionHeading id="tools" eyebrow="Race day" title="Championship Tools" />
-          <div className="grid gap-3 sm:grid-cols-3">
-            {[
-              { href: '/head-to-head', title: 'Head-to-Head', description: 'Compare two drivers, race finishes, wins and podiums.' },
-              { href: '/predictor', title: 'Championship Predictor', description: 'Simulate future race points without modifying the real standings.' },
-              { href: '/starting-grid', title: 'Starting Grid Generator', description: 'Draw a random grid or use championship and race order.' },
-            ].map(item => <Link key={item.href} href={item.href} className="flex min-h-36 flex-col justify-between gap-4 rounded-sm border border-border bg-card p-5 transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-primary">
-              <h3 className="text-xl font-black uppercase italic">{item.title}</h3>
-              <p className="text-sm text-muted-foreground">{item.description}</p>
-              <span className="font-mono text-xs font-bold uppercase text-primary">Open tool →</span>
-            </Link>)}
-          </div>
-        </section>
-        <section aria-labelledby="constructors" className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pb-10 sm:gap-8 sm:pb-16 md:px-6">
-          <SectionHeading id="constructors" eyebrow="Teams" title="Constructors" />
-          <ConstructorsTable constructors={constructors} />
-        </section>
-
-        <section aria-labelledby="calendar" className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pb-10 sm:gap-8 sm:pb-16 md:px-6">
-          <SectionHeading id="calendar" eyebrow="2026 Season" title="Calendar" />
-          <Calendar races={races} />
-        </section>
-
-        <section aria-labelledby="results" className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pb-12 sm:gap-8 sm:pb-20 md:px-6">
-          <SectionHeading id="results" eyebrow="Round by round" title="Race Results" />
-          <RaceResults races={races} classifications={classifications} />
-        </section>
-      </main>
-      <SiteFooter />
-    </>
-  )
+export default function HallOfFamePage() {
+  return <>
+    <SiteHeader />
+    <main className="mx-auto min-h-[70vh] max-w-6xl px-4 py-10 sm:py-16 md:px-6">
+      <Link href="/" className="mb-8 inline-flex min-h-11 items-center gap-2 text-sm font-semibold uppercase text-muted-foreground hover:text-primary"><ArrowLeft aria-hidden className="size-4" /> Back to championship</Link>
+      <p className="font-mono text-xs font-bold uppercase tracking-widest text-primary">Championship History</p>
+      <h1 className="mb-4 mt-2 text-3xl font-black uppercase italic sm:text-5xl">Hall of Fame</h1>
+      <p className="mb-8 max-w-2xl text-sm text-muted-foreground sm:text-base">Celebrating the Drivers' Champions from previous seasons.</p>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {champions.map(champion => <article key={champion.season} className="relative overflow-hidden rounded-sm border border-primary/50 bg-card p-6 sm:p-8">
+          <div className="flex items-center justify-between gap-3"><span className="font-mono text-xs font-bold uppercase tracking-widest text-primary">Season {champion.season}</span><Crown aria-hidden className="size-7 text-primary" /></div>
+          <div className="my-8 flex justify-center"><Trophy aria-label="Championship trophy" className="size-20 text-primary sm:size-24" strokeWidth={1.35} /></div>
+          <p className="text-center font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground">{champion.title}</p>
+          <h2 className="mt-2 text-center text-4xl font-black uppercase italic tracking-tight sm:text-5xl">{champion.name}</h2>
+          <p className="mt-3 text-center text-sm text-muted-foreground">Champion of the {champion.season} Kart Championship</p>
+        </article>)}
+      </div>
+      <p className="mt-6 text-sm text-muted-foreground">2026 champion will be added after the season ends. Historical titles do not affect current standings.</p>
+    </main>
+    <SiteFooter />
+  </>
 }
