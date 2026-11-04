@@ -1,4 +1,8 @@
 import { Calendar } from '@/components/calendar'
+import { ChampionshipBattle } from '@/components/championship-battle'
+import { AttendanceOverview } from '@/components/attendance-overview'
+import { buildBattleSeries } from '@/lib/battle'
+import { getAttendanceCounts } from '@/lib/attendance'
 import { ConstructorsTable } from '@/components/constructors-table'
 import { DataNotice } from '@/components/data-notice'
 import { Hero } from '@/components/hero'
@@ -14,7 +18,7 @@ import { classifyRace, getChampionship } from '@/lib/championship'
 export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
-  const championship = await getChampionship()
+  const [championship, attendanceCounts] = await Promise.all([getChampionship(), getAttendanceCounts()])
   const { drivers, constructors, races, source } = championship
   const nextRace = races.find((race) => !race.completed)
   const classifications = Object.fromEntries(races.map((race) => [race.id, classifyRace(championship, race.id)]))
@@ -35,9 +39,17 @@ export default async function HomePage() {
         <section aria-labelledby="standings" className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-16 md:px-6">
           <SectionHeading id="standings" eyebrow="Drivers' Championship" title="Leaderboard" />
           <Podium drivers={drivers} />
-          <StandingsTable drivers={drivers} races={races} />
+          <StandingsTable drivers={drivers} races={races} results={championship.results} />
         </section>
 
+        <section aria-labelledby="battle" className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-16 md:px-6">
+          <SectionHeading id="battle" eyebrow="Title race" title="Championship Battle" />
+          <ChampionshipBattle drivers={drivers} series={buildBattleSeries(drivers,races,championship.results)} />
+        </section>
+        <section aria-labelledby="attendance" className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-16 md:px-6">
+          <SectionHeading id="attendance" eyebrow="Next grid" title="Race Attendance" />
+          <AttendanceOverview races={races} counts={attendanceCounts} />
+        </section>
         <section aria-labelledby="constructors" className="mx-auto flex max-w-6xl flex-col gap-8 px-4 pb-16 md:px-6">
           <SectionHeading id="constructors" eyebrow="Teams" title="Constructors" />
           <ConstructorsTable constructors={constructors} />

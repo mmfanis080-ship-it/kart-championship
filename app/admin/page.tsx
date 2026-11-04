@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { DriverForm } from '@/components/admin/driver-form'
+import { AttendanceLinkManager } from '@/components/admin/attendance-link-manager'
+import type { AttendanceEntry, AttendanceLinkInfo } from '@/lib/attendance'
 import { PhotoForm } from '@/components/admin/photo-form'
 import { RaceForm } from '@/components/admin/race-form'
 import { TrackImageForm } from '@/components/admin/track-image-form'
@@ -25,6 +27,7 @@ const errorMessages: Record<string, string> = {
   'save-failed': 'The change could not be saved. Please try again.',
   photo: 'The photo must be a JPG, PNG or WebP image up to 3 MB.',
   'photo-upload': 'The photo could not be uploaded. Make sure the photo storage SQL (003) has been run.',
+  attendance: 'Check SQL migration 006 and your Admin permissions.',
 }
 
 export default async function AdminPage({
@@ -40,7 +43,14 @@ export default async function AdminPage({
   } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const [{ error, saved }, championship] = await Promise.all([searchParams, getChampionship()])
+  const [{ error, saved }, championship, linkQuery, entryQuery] = await Promise.all([
+    searchParams, getChampionship(),
+    supabase.from('attendance_links').select('driver_id, expires_at, revoked_at'),
+    supabase.from('attendance_entries').select('race_id, driver_id, choice, updated_at'),
+  ])
+  const attendanceReady = !linkQuery.error && !entryQuery.error
+  const links = (linkQuery.data ?? []) as AttendanceLinkInfo[]
+  const attendanceEntries = (entryQuery.data ?? []) as AttendanceEntry[]
   const { drivers, races, source, errorMessage, pointsFromResults } = championship
   const nextRound = (races.at(-1)?.round ?? 0) + 1
 
@@ -84,12 +94,13 @@ export default async function AdminPage({
               </Button>
             </form>
           </div>
-          {pointsFromResults && (
-            <p className="text-sm text-muted-foreground">
-              Οι βαθμοί και η σειρά υπολογίζονται αυτόματα από τα Race Results.
-              Αλλαγές βαθμών γίνονται από τα αποτελέσματα του κάθε αγώνα πιο κάτω.
-            </p>
-          )}
+          <p className="text-sm text-muted-foreground">
+            Μπορείς να αλλάξεις χειροκίνητα τους συνολικούς βαθμούς κάθε οδηγού και να πατήσεις Save.
+            Η σειρά της βαθμολογίας ενημερώνεται με τους νέους βαθμούς και σε ισοβαθμία
+            μετράνε οι τερματισμοί των Race Results. Αν αλλάξεις αποτελέσματα αγώνων,
+            πάτησε «Recalculate points from results» για να ξαναϋπολογιστούν τα σύνολα.
+            Προσοχή: ο επανυπολογισμός αντικαθιστά τις χειροκίνητες αλλαγές βαθμών.
+          </p>
           <div className="flex flex-col gap-3">
             {drivers.map((driver) => (
               <div key={driver.id} className="flex flex-col gap-2">
@@ -114,6 +125,19 @@ export default async function AdminPage({
           <RaceForm nextRound={nextRound} />
         </section>
 
+        <section aria-labelledby="attendance-links" className="flex scroll-mt-24 flex-col gap-4">
+          <SectionHeading id="attendance-links" eyebrow="Private driver access" title="Attendance Links" />
+          <p className="text-sm text-muted-foreground">Πάτησε Create / rotate, στείλε τον προσωπικό σύνδεσμο ιδιωτικά και κράτησέ τον μυστικό. Νέος σύνδεσμος ακυρώνει τον προηγούμενο. Revoke ακυρώνει την πρόσβαση.</p>
+          {!attendanceReady ? <p className="rounded-sm border border-amber-500/40 p-4 text-sm">Run scripts/006_championship_upgrade.sql in Supabase SQL Editor to enable Attendance.</p> : <AttendanceLinkManager drivers={drivers} links={links} entries={attendanceEntries} />}
+          <div className="overflow-x-auto rounded-sm border border-border bg-card p-4">
+            <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted-foreground">Responses per upcoming race · Admin only</p>
+            <table className="w-full min-w-[420px] text-sm"><thead><tr className="border-b border-border text-left"><th className="py-2">Race</th><th>Yes</th><th>Maybe</th><th>No</th><th>Pending</th></tr></thead><tbody>{races.filter(r => !r.completed).map(r => { const votes=attendanceEntries.filter(v=>v.race_id===r.id); return <tr className="border-b border-border/40" key={r.id}><td className="py-2">R{r.round}: {r.name}</td><td>{votes.filter(v=>v.choice==='yes').length}</td><td>{votes.filter(v=>v.choice==='maybe').length}</td><td>{votes.filter(v=>v.choice==='no').length}</td><td>{Math.max(0, drivers.length-votes.length)}</td></tr> })}</tbody></table>
+          </div>
+          <div className="overflow-x-auto rounded-sm border border-border bg-card p-4">
+            <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted-foreground">Each driver's upcoming race response</p>
+            <table className="w-full min-w-[460px] text-sm"><thead><tr className="border-b border-border text-left"><th className="py-2 pr-4">Driver</th>{races.filter(r=>!r.completed).map(r=><th key={r.id} className="px-3 py-2 text-center">R{r.round}</th>)}</tr></thead><tbody>{drivers.map(driver=><tr key={driver.id} className="border-b border-border/40"><th className="py-2 pr-4 text-left font-semibold">{driver.name}</th>{races.filter(r=>!r.completed).map(r=>{const vote=attendanceEntries.find(v=>v.race_id===r.id&&v.driver_id===driver.id);return <td key={r.id} className="px-3 py-2 text-center font-mono text-xs uppercase">{vote?.choice??'–'}</td>})}</tr>)}</tbody></table>
+          </div>
+        </section>
         <section aria-labelledby="results" className="flex scroll-mt-24 flex-col gap-4">
           <SectionHeading id="results" eyebrow="Classification" title="Race Results" />
           {races.length === 0 && <p className="text-sm text-muted-foreground">Add a race in the Calendar first.</p>}

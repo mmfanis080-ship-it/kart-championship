@@ -22,6 +22,8 @@ export function SiteHeader() {
           <Link href="/#standings" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground sm:block">
             Standings
           </Link>
+          <Link href="/#battle" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground lg:block">Battle</Link>
+          <Link href="/#attendance" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground lg:block">Attendance</Link>
           <Link href="/#constructors" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground sm:block">
             Teams
           </Link>
@@ -49,6 +51,8 @@ export function SiteHeader() {
       <nav aria-label="Sections" className="flex gap-1 overflow-x-auto border-t border-border px-3 py-1 text-xs font-semibold uppercase tracking-wide sm:hidden">
         {[
           ['Standings', '/#standings'],
+          ['Battle', '/#battle'],
+          ['Attendance', '/#attendance'],
           ['Teams', '/#constructors'],
           ['Calendar', '/#calendar'],
           ['Results', '/#results'],

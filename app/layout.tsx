@@ -1,4 +1,4 @@
-import { Analytics } from '@vercel/analytics/next'
+import { PrivacyAnalytics } from '@/components/privacy-analytics'
 import type { Metadata, Viewport } from 'next'
 import { Geist_Mono, Titillium_Web } from 'next/font/google'
 import './globals.css'
@@ -43,7 +43,7 @@ export default function RootLayout({
     <html lang="en" className={`dark ${titillium.variable} ${geistMono.variable}`}>
       <body className="font-sans antialiased">
         {children}
-        {process.env.NODE_ENV === 'production' && <Analytics />}
+        {process.env.NODE_ENV === 'production' && <PrivacyAnalytics />}
       </body>
     </html>
   )

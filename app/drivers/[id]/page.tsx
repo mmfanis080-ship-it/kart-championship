@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { DriverCard } from '@/components/driver-card'
+import { ChampionshipBattle } from '@/components/championship-battle'
+import { buildBattleSeries, finishForm } from '@/lib/battle'
 import { HeadToHead, type H2HDriver } from '@/components/head-to-head'
 import { SectionHeading } from '@/components/section-heading'
 import { SiteFooter } from '@/components/site-footer'
@@ -48,12 +50,20 @@ export default async function DriverPage({ params }: { params: Promise<{ id: str
     }
   }
   const others = championship.drivers.filter((entry) => entry.id !== id).map(toH2H)
+  const classified = history.filter(entry=>entry.position>0)
+  const avgFinish = classified.length ? (classified.reduce((sum,entry)=>sum+entry.position,0)/classified.length).toFixed(1) : '–'
+  const completed = championship.races.filter(r=>r.completed).length
+  const recent = finishForm(id, championship.races, championship.results)
+  const lapHistory = lapSessions.flatMap(session=>session.results.filter(result=>result.driver_id===id && result.best_ms>0)
+    .map(result=>({ session:session.name, track:session.track, best:result.best_ms, date:session.session_date }))).sort((a,b)=>(b.date??'').localeCompare(a.date??''))
   const stats = [
     { label: 'Position', value: `P${index + 1}` },
     { label: 'Points', value: driver.points },
     { label: 'Wins', value: driver.wins },
     { label: 'Podiums', value: driver.podiums },
     { label: 'Best finish', value: driver.bestFinish ? `P${driver.bestFinish}` : '–' },
+    { label: 'Average finish', value: avgFinish },
+    { label: 'Classified rounds', value: completed ? `${Math.round(classified.length/completed*100)}%` : '–' },
   ]
 
   return (
@@ -93,6 +103,15 @@ export default async function DriverPage({ params }: { params: Promise<{ id: str
           </div>
         </div>
 
+        <section aria-labelledby="driver-form" className="flex flex-col gap-5">
+          <SectionHeading id="driver-form" eyebrow="Season performance" title="Recent Form & Lap Sessions" />
+          <div className="rounded-sm border border-border bg-card p-5"><p className="mb-3 text-xs uppercase text-muted-foreground">Last five races</p><div className="flex flex-wrap gap-2">{recent.length?recent.map((pos,i)=><span className={`rounded-sm border px-4 py-3 font-mono font-bold ${pos===1?'border-primary text-primary':'border-border'}`} key={i}>{pos?`P${pos}`:'–'}</span>):'No race results yet.'}</div></div>
+          <div className="rounded-sm border border-border bg-card p-5"><p className="mb-3 text-xs uppercase text-muted-foreground">Linked lap sessions</p>{lapHistory.length?<div className="grid gap-2 sm:grid-cols-2">{lapHistory.slice(0,6).map((entry,i)=><div className="rounded-sm border border-border p-3" key={i}><p className="font-bold uppercase">{entry.track}</p><p className="text-xs text-muted-foreground">{entry.session}</p><p className="mt-2 font-mono text-lg font-bold">{(entry.best/1000).toFixed(3)}s</p></div>)}</div>:<p className="text-sm text-muted-foreground">No linked lap times. Check lap_results.driver_id in Supabase.</p>}</div>
+        </section>
+        <section aria-labelledby="driver-points" className="flex flex-col gap-5">
+          <SectionHeading id="driver-points" eyebrow="Race by race" title="Points Progression" />
+          <ChampionshipBattle drivers={[driver]} series={buildBattleSeries([driver],championship.races,championship.results)} />
+        </section>
         {others.length > 0 && (
           <section aria-label="Head to head" className="flex flex-col gap-6">
             <HeadToHead key={id} current={toH2H(driver)} others={others} />
