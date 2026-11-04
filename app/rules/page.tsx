@@ -58,7 +58,7 @@ export default function RulesPage() {
               <a
                 key={category.id}
                 href={`#${category.id}`}
-                className="rounded-sm border border-border px-3 py-1.5 text-sm font-semibold transition-colors hover:border-primary hover:text-primary"
+                className="flex min-h-11 items-center rounded-sm border border-border px-3 py-1.5 text-sm font-semibold transition-colors hover:border-primary hover:text-primary sm:min-h-0"
               >
                 {category.title}
               </a>

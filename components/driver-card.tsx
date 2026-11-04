@@ -72,7 +72,7 @@ export function DriverCard({
 
         <div className="absolute left-5 top-4 z-10 flex flex-col leading-none" style={{ textShadow: '0 2px 12px rgba(0,0,0,.6)' }}>
           <span className="font-mono text-[11px] font-bold tracking-[0.3em]" style={{ color }}>RTG</span>
-          <span className="text-7xl font-black tabular-nums">{ratings.rtg ?? '–'}</span>
+          <span className="text-6xl font-black tabular-nums sm:text-7xl">{ratings.rtg ?? '–'}</span>
         </div>
 
         <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-4">
@@ -80,7 +80,7 @@ export function DriverCard({
             <GreekFlag />
             <span>P{position}</span>
           </div>
-          <h1 className="text-4xl font-black uppercase italic leading-none tracking-tight">{name}</h1>
+          <h1 className="break-words text-3xl font-black uppercase italic leading-none tracking-tight sm:break-normal sm:text-4xl">{name}</h1>
           <p className="font-mono text-sm font-bold uppercase tracking-widest" style={{ color }}>{team}</p>
           <dl
             className="mt-1 grid grid-cols-4 divide-x divide-white/20 rounded-xl py-2"
@@ -89,7 +89,7 @@ export function DriverCard({
             {stats.map((stat) => (
               <div key={stat.label} className="flex flex-col items-center gap-0.5">
                 <dt className="font-mono text-[10px] font-bold tracking-widest text-white/80">{stat.label}</dt>
-                <dd className="text-2xl font-black tabular-nums text-white">{stat.value ?? '–'}</dd>
+                <dd className="text-xl font-black tabular-nums text-white sm:text-2xl">{stat.value ?? '–'}</dd>
               </div>
             ))}
           </dl>

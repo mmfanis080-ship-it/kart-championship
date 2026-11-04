@@ -35,14 +35,14 @@ export function NextRaceCard({ race }: { race: Race }) {
 
   return (
     <div className="relative overflow-hidden rounded-sm border border-border bg-card">
-      <div className="grid gap-8 p-6 md:grid-cols-2 md:p-8">
+      <div className="grid gap-6 p-4 sm:gap-8 sm:p-6 md:grid-cols-2 md:p-8">
         <div className="flex flex-col gap-5">
           <div className="flex items-center justify-between font-mono text-xs uppercase tracking-[0.3em]">
             <span className="text-primary">Next race</span>
             <span className="text-muted-foreground">Round {race.round}</span>
           </div>
           <div className="flex flex-col gap-2">
-            <h3 className="text-4xl font-black uppercase italic leading-none tracking-tight md:text-5xl">{race.name}</h3>
+            <h3 className="break-words text-3xl font-black uppercase italic leading-none tracking-tight sm:break-normal sm:text-4xl md:text-5xl">{race.name}</h3>
             {race.track && <p className="text-sm text-muted-foreground">{race.track}</p>}
             {race.details && (
               <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">{race.details}</p>
@@ -57,14 +57,14 @@ export function NextRaceCard({ race }: { race: Race }) {
         )}
       </div>
 
-      <div className="border-t border-border bg-background/40 p-6 md:px-8">
+      <div className="border-t border-border bg-background/40 p-4 sm:p-6 md:px-8">
         {target !== null ? (
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-4 gap-2 md:max-w-md">
               {units.map((unit, index) => (
                 <div key={unit.label} className="flex flex-col items-center gap-1 rounded-sm border border-border bg-card py-3">
                   <span
-                    className={`font-mono text-3xl font-bold tabular-nums md:text-4xl ${index === 3 ? 'text-primary' : ''}`}
+                    className={`font-mono text-2xl font-bold tabular-nums sm:text-3xl md:text-4xl ${index === 3 ? 'text-primary' : ''}`}
                     suppressHydrationWarning
                   >
                     {unit.value === undefined ? '--' : String(unit.value).padStart(2, '0')}

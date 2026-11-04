@@ -31,36 +31,36 @@ export default async function HomePage() {
         <Hero leader={drivers[0]} runnerUp={drivers[1]} races={races} />
 
         {nextRace && (
-          <section aria-label="Next race" className="mx-auto max-w-6xl px-4 pt-16 md:px-6">
+          <section aria-label="Next race" className="mx-auto max-w-6xl px-4 pt-10 sm:pt-16 md:px-6">
             <NextRaceCard race={nextRace} />
           </section>
         )}
 
-        <section aria-labelledby="standings" className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-16 md:px-6">
+        <section aria-labelledby="standings" className="mx-auto flex max-w-6xl flex-col gap-5 px-4 py-10 sm:gap-8 sm:py-16 md:px-6">
           <SectionHeading id="standings" eyebrow="Drivers' Championship" title="Leaderboard" />
           <Podium drivers={drivers} />
           <StandingsTable drivers={drivers} races={races} results={championship.results} />
         </section>
 
-        <section aria-labelledby="battle" className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-16 md:px-6">
+        <section aria-labelledby="battle" className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pb-10 sm:gap-6 sm:pb-16 md:px-6">
           <SectionHeading id="battle" eyebrow="Title race" title="Championship Battle" />
           <ChampionshipBattle drivers={drivers} series={buildBattleSeries(drivers,races,championship.results)} />
         </section>
-        <section aria-labelledby="attendance" className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-16 md:px-6">
+        <section aria-labelledby="attendance" className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pb-10 sm:gap-6 sm:pb-16 md:px-6">
           <SectionHeading id="attendance" eyebrow="Next grid" title="Race Attendance" />
           <AttendanceOverview races={races} counts={attendanceCounts} />
         </section>
-        <section aria-labelledby="constructors" className="mx-auto flex max-w-6xl flex-col gap-8 px-4 pb-16 md:px-6">
+        <section aria-labelledby="constructors" className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pb-10 sm:gap-8 sm:pb-16 md:px-6">
           <SectionHeading id="constructors" eyebrow="Teams" title="Constructors" />
           <ConstructorsTable constructors={constructors} />
         </section>
 
-        <section aria-labelledby="calendar" className="mx-auto flex max-w-6xl flex-col gap-8 px-4 pb-16 md:px-6">
+        <section aria-labelledby="calendar" className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pb-10 sm:gap-8 sm:pb-16 md:px-6">
           <SectionHeading id="calendar" eyebrow="2026 Season" title="Calendar" />
           <Calendar races={races} />
         </section>
 
-        <section aria-labelledby="results" className="mx-auto flex max-w-6xl flex-col gap-8 px-4 pb-20 md:px-6">
+        <section aria-labelledby="results" className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pb-12 sm:gap-8 sm:pb-20 md:px-6">
           <SectionHeading id="results" eyebrow="Round by round" title="Race Results" />
           <RaceResults races={races} classifications={classifications} />
         </section>

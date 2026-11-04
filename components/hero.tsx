@@ -27,16 +27,16 @@ export function Hero({ leader, runnerUp, races }: HeroProps) {
       <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background/10" />
       <div aria-hidden className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background to-transparent" />
 
-      <div className="relative mx-auto flex max-w-6xl flex-col gap-10 px-4 py-16 md:px-6 md:py-24">
+      <div className="relative mx-auto flex max-w-6xl flex-col gap-7 px-4 py-12 sm:gap-10 sm:py-16 md:px-6 md:py-24">
         <div className="flex max-w-2xl flex-col gap-5">
           <p className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.3em] text-primary">
             <span className="h-px w-8 bg-primary" aria-hidden />
             {completed} {completed === 1 ? 'round' : 'rounds'} classified
           </p>
-          <h1 className="text-balance text-5xl font-black uppercase italic leading-[0.9] tracking-tight md:text-7xl">
+          <h1 className="text-balance text-4xl font-black uppercase italic leading-[0.9] tracking-tight sm:text-5xl md:text-7xl">
             Driver <span className="text-primary">Standings</span>
           </h1>
-          <p className="max-w-lg text-pretty text-lg leading-relaxed text-muted-foreground">
+          <p className="max-w-lg text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
             Every point, every podium, every overtake. Follow the fight for the 2026 Kart Championship title
             round by round.
           </p>

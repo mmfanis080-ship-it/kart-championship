@@ -13,7 +13,7 @@ export default function LoginPage() {
     <>
       <SiteHeader />
       <main className="flex min-h-[calc(100svh-4rem)] items-center justify-center px-4 py-16">
-        <div className="relative w-full max-w-sm overflow-hidden rounded-sm border border-border bg-card p-8">
+        <div className="relative w-full max-w-sm overflow-hidden rounded-sm border border-border bg-card p-5 sm:p-8">
           <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-primary" />
           <div className="mb-8 flex flex-col gap-2">
             <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary">Race Control</p>

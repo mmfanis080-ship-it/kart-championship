@@ -64,7 +64,7 @@ function LapChart({ a, b }: { a: LapResult; b: LapResult }) {
   const ticks = [0, 1, 2, 3].map((i) => lo + ((hi - lo) * i) / 3)
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label={`Lap by lap: ${a.driver_name} against ${b.driver_name}`}>
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-[560px] max-w-none sm:w-full" role="img" aria-label={`Lap by lap: ${a.driver_name} against ${b.driver_name}`}>
       {ticks.map((tick) => (
         <g key={tick}>
           <line x1={L} x2={W - R} y1={y(tick)} y2={y(tick)} stroke="currentColor" strokeOpacity={0.12} />
@@ -191,7 +191,32 @@ export function LapComparison({ sessions }: { sessions: LapSession[] }) {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-sm border border-border bg-card">
+      <div className="grid gap-2 sm:hidden" aria-label="Best laps on mobile">
+        {results.map((row,index)=>(
+          <article key={row.id} className={cn('rounded-sm border border-border bg-card p-3', row.id===aId&&'border-[#e10600]/70',row.id===bId&&'border-[#a3e635]/70')}>
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="w-6 shrink-0 font-mono text-sm text-muted-foreground">{index+1}</span>
+              <Avatar result={row}/>
+              <div className="min-w-0 flex-1">
+                <p className="break-words text-sm font-bold uppercase">{row.driver_name}</p>
+                {row.kart!==null&&<p className="text-[11px] text-muted-foreground">Kart {row.kart}</p>}
+              </div>
+              <div className="shrink-0 text-right">
+                <p className="font-mono text-base font-bold tabular-nums">{formatLap(row.best_ms)}</p>
+                <p className="font-mono text-xs text-muted-foreground">{row.best_ms===fastest?'Fastest lap':formatGap(row.best_ms-fastest)}</p>
+              </div>
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3">
+              <div className="flex gap-3">
+                <label className="flex min-h-11 items-center gap-1.5 text-xs font-bold"><input type="radio" name="lap-a-mobile" checked={row.id===aId} onChange={()=>pickA(row.id)} aria-label={`Compare ${row.driver_name} as A`} className="size-5" style={{accentColor:COLOR_A}}/> A</label>
+                <label className="flex min-h-11 items-center gap-1.5 text-xs font-bold"><input type="radio" name="lap-b-mobile" checked={row.id===bId} onChange={()=>pickB(row.id)} aria-label={`Compare ${row.driver_name} as B`} className="size-5" style={{accentColor:COLOR_B}}/> B</label>
+              </div>
+              <p className="font-mono text-[10px] text-muted-foreground">{sectors.filter(({key})=>row[key]!==null).map(({label,key})=>`${label.slice(-1)}: ${formatSector(row[key] as number)}`).join(' · ')}</p>
+            </div>
+          </article>
+        ))}
+      </div>
+      <div className="hidden overflow-x-auto rounded-sm border border-border bg-card sm:block">
         <table className="w-full min-w-[520px] border-collapse text-left">
           <caption className="sr-only">Best laps of the session</caption>
           <thead>
@@ -285,7 +310,10 @@ export function LapComparison({ sessions }: { sessions: LapSession[] }) {
                   <span className="flex items-center gap-2"><span className="size-3 rounded-full" style={{ background: COLOR_B }} />{b.driver_name}</span>
                 </div>
               </div>
-              <LapChart a={a} b={b} />
+              <div className="min-w-0 overflow-x-auto" tabIndex={0} aria-label="Lap chart, scroll horizontally on mobile">
+                <p className="mb-2 font-mono text-[10px] uppercase text-muted-foreground sm:hidden">Swipe sideways to inspect lap times →</p>
+                <LapChart a={a} b={b} />
+              </div>
               <dl className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-0">
                 {[
                   { label: 'Average lap', av: formatLap(Math.round(statsA.avg)), bv: formatLap(Math.round(statsB.avg)), lead: statsA.avg === statsB.avg ? null : statsA.avg < statsB.avg ? 'a' : 'b' },

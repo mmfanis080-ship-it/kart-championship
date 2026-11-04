@@ -20,17 +20,17 @@ export function RaceResults({ races, classifications }: RaceResultsProps) {
       {races.map((race) => {
         const results = classifications[race.id] ?? []
         return (
-          <article key={race.id} className="flex flex-col gap-4 rounded-sm border border-border bg-card p-5">
-            <header className="flex items-center justify-between gap-3">
-              <div className="flex flex-col">
+          <article key={race.id} className="flex min-w-0 flex-col gap-4 rounded-sm border border-border bg-card p-3 sm:p-5">
+            <header className="flex min-w-0 items-start justify-between gap-2 sm:items-center sm:gap-3">
+              <div className="flex min-w-0 flex-col">
                 <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
                   Round {String(race.round).padStart(2, '0')}
                 </span>
-                <h3 className="text-xl font-black uppercase italic tracking-tight">{race.name}</h3>
+                <h3 className="break-words text-lg font-black uppercase italic tracking-tight sm:text-xl">{race.name}</h3>
               </div>
               <span
                 className={cn(
-                  'rounded-sm px-2 py-0.5 font-mono text-[11px] uppercase tracking-widest',
+                  'shrink-0 rounded-sm px-2 py-0.5 font-mono text-[11px] uppercase tracking-widest',
                   race.completed ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground',
                 )}
               >
@@ -41,7 +41,7 @@ export function RaceResults({ races, classifications }: RaceResultsProps) {
             {results.length > 0 ? (
               <ol className="flex flex-col divide-y divide-border" aria-label={`Round ${race.round} classification`}>
                 {results.map((result) => (
-                  <li key={result.id} className="flex items-center gap-4 py-2">
+                  <li key={result.id} className="flex min-w-0 items-center gap-2 py-2 sm:gap-4">
                     <span
                       className={cn(
                         'w-8 font-mono font-bold tabular-nums',
@@ -50,11 +50,11 @@ export function RaceResults({ races, classifications }: RaceResultsProps) {
                     >
                       P{result.position}
                     </span>
-                    <span className="flex flex-1 flex-col leading-tight">
-                      <span className="font-bold uppercase">{result.driverName}</span>
+                    <span className="flex min-w-0 flex-1 flex-col leading-tight">
+                      <span className="break-words font-bold uppercase">{result.driverName}</span>
                       <span className="text-xs text-muted-foreground">{result.team}</span>
                     </span>
-                    <span className="font-mono tabular-nums">
+                    <span className="shrink-0 font-mono text-sm tabular-nums sm:text-base">
                       +{result.points} <span className="text-xs text-muted-foreground">PTS</span>
                     </span>
                   </li>

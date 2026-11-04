@@ -63,7 +63,7 @@ export function TrackImageForm({ race }: { race: Race }) {
         <span className="flex size-10 items-center justify-center rounded-sm border border-dashed border-border text-xs text-muted-foreground">–</span>
       )}
       <label htmlFor={`${race.id}-track-image`} className={labelClass}>Track image</label>
-      <input id={`${race.id}-track-image`} name="image" type="file" accept="image/*" required onChange={onPick} className="max-w-full text-sm" />
+      <input id={`${race.id}-track-image`} name="image" type="file" accept="image/*" required onChange={onPick} className="w-full max-w-full text-sm sm:w-auto" />
       <UploadButton busy={busy} />
       {problem && <p role="alert" className="w-full text-sm text-destructive">{problem}</p>}
     </form>

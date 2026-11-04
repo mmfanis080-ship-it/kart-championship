@@ -9,7 +9,7 @@ export function DriverForm({ driver, pointsFromResults = false }: { driver?: Dri
   return (
     <form
       action={driver ? updateDriver : createDriver}
-      className="grid grid-cols-2 items-end gap-3 rounded-sm border border-border bg-card p-4 md:grid-cols-[1fr_1fr_6rem_auto]"
+      className="grid grid-cols-1 items-end gap-3 rounded-sm border border-border bg-card p-3 sm:grid-cols-2 sm:p-4 md:grid-cols-[1fr_1fr_6rem_auto]"
     >
       {driver && <input type="hidden" name="id" value={driver.id} />}
       <Field id={`${prefix}-name`} label="Driver" name="name" defaultValue={driver?.name} maxLength={80} />

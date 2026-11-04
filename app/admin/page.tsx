@@ -61,8 +61,8 @@ export default async function AdminPage({
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="flex flex-col gap-2">
             <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary">Race Control</p>
-            <h1 className="text-4xl font-black uppercase italic tracking-tight">Admin Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Signed in as {user.email}</p>
+            <h1 className="break-words text-3xl font-black uppercase italic tracking-tight sm:text-4xl">Admin Dashboard</h1>
+            <p className="break-all text-sm text-muted-foreground">Signed in as {user.email}</p>
           </div>
           <form action={signOut}>
             <Button type="submit" variant="outline" className="font-bold uppercase">Sign out</Button>
@@ -129,11 +129,34 @@ export default async function AdminPage({
           <SectionHeading id="attendance-links" eyebrow="Private driver access" title="Attendance Links" />
           <p className="text-sm text-muted-foreground">Πάτησε Create / rotate, στείλε τον προσωπικό σύνδεσμο ιδιωτικά και κράτησέ τον μυστικό. Νέος σύνδεσμος ακυρώνει τον προηγούμενο. Revoke ακυρώνει την πρόσβαση.</p>
           {!attendanceReady ? <p className="rounded-sm border border-amber-500/40 p-4 text-sm">Run scripts/006_championship_upgrade.sql in Supabase SQL Editor to enable Attendance.</p> : <AttendanceLinkManager drivers={drivers} links={links} entries={attendanceEntries} />}
-          <div className="overflow-x-auto rounded-sm border border-border bg-card p-4">
+          <div className="rounded-sm border border-border bg-card p-4 sm:hidden">
+            <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted-foreground">Responses per upcoming race · Admin only</p>
+            <div className="grid gap-3">{races.filter(r=>!r.completed).map(r=>{
+              const votes=attendanceEntries.filter(v=>v.race_id===r.id)
+              const summaries=[['Yes',votes.filter(v=>v.choice==='yes').length],['Maybe',votes.filter(v=>v.choice==='maybe').length],['No',votes.filter(v=>v.choice==='no').length],['Pending',Math.max(0,drivers.length-votes.length)]] as const
+              return <article key={r.id} className="rounded-sm border border-border p-3">
+                <p className="break-words text-sm font-bold uppercase">R{r.round}: {r.name}</p>
+                <dl className="mt-3 grid grid-cols-4 gap-1 text-center">{summaries.map(([label,value])=><div key={label}>
+                  <dt className="text-[10px] text-muted-foreground">{label}</dt><dd className="font-mono text-lg font-bold">{value}</dd>
+                </div>)}</dl>
+              </article>
+            })}</div>
+          </div>
+          <div className="hidden overflow-x-auto rounded-sm border border-border bg-card p-4 sm:block">
             <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted-foreground">Responses per upcoming race · Admin only</p>
             <table className="w-full min-w-[420px] text-sm"><thead><tr className="border-b border-border text-left"><th className="py-2">Race</th><th>Yes</th><th>Maybe</th><th>No</th><th>Pending</th></tr></thead><tbody>{races.filter(r => !r.completed).map(r => { const votes=attendanceEntries.filter(v=>v.race_id===r.id); return <tr className="border-b border-border/40" key={r.id}><td className="py-2">R{r.round}: {r.name}</td><td>{votes.filter(v=>v.choice==='yes').length}</td><td>{votes.filter(v=>v.choice==='maybe').length}</td><td>{votes.filter(v=>v.choice==='no').length}</td><td>{Math.max(0, drivers.length-votes.length)}</td></tr> })}</tbody></table>
           </div>
-          <div className="overflow-x-auto rounded-sm border border-border bg-card p-4">
+          <div className="rounded-sm border border-border bg-card p-4 sm:hidden">
+            <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted-foreground">Each driver's upcoming race response</p>
+            <div className="grid gap-2">{drivers.map(driver=><details key={driver.id} className="rounded-sm border border-border p-3">
+              <summary className="cursor-pointer text-sm font-bold uppercase">{driver.name}</summary>
+              <dl className="mt-3 grid grid-cols-2 gap-2">{races.filter(r=>!r.completed).map(r=>{
+                const vote=attendanceEntries.find(v=>v.race_id===r.id&&v.driver_id===driver.id)
+                return <div key={r.id} className="rounded-sm bg-background/50 p-2"><dt className="text-[11px] text-muted-foreground">R{r.round}: {r.name}</dt><dd className="mt-1 font-mono text-xs font-bold uppercase">{vote?.choice??'Pending'}</dd></div>
+              })}</dl>
+            </details>)}</div>
+          </div>
+          <div className="hidden overflow-x-auto rounded-sm border border-border bg-card p-4 sm:block">
             <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted-foreground">Each driver's upcoming race response</p>
             <table className="w-full min-w-[460px] text-sm"><thead><tr className="border-b border-border text-left"><th className="py-2 pr-4">Driver</th>{races.filter(r=>!r.completed).map(r=><th key={r.id} className="px-3 py-2 text-center">R{r.round}</th>)}</tr></thead><tbody>{drivers.map(driver=><tr key={driver.id} className="border-b border-border/40"><th className="py-2 pr-4 text-left font-semibold">{driver.name}</th>{races.filter(r=>!r.completed).map(r=>{const vote=attendanceEntries.find(v=>v.race_id===r.id&&v.driver_id===driver.id);return <td key={r.id} className="px-3 py-2 text-center font-mono text-xs uppercase">{vote?.choice??'–'}</td>})}</tr>)}</tbody></table>
           </div>

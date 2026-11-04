@@ -92,3 +92,15 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Mobile-only usability enhancements. All >=640px layouts remain unchanged. */
+@media (max-width: 639px) {
+  html { scroll-padding-top: 8.5rem; }
+  main { min-width: 0; }
+  main > section, main section, main article { min-width: 0; }
+  .mobile-section-rail { scrollbar-width: none; scroll-snap-type: x proximity; }
+  .mobile-section-rail::-webkit-scrollbar { display: none; }
+  .mobile-section-rail > a { scroll-snap-align: start; }
+  /* iOS does not auto-zoom when form fields use a 16px font. */
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: 16px; }
+}

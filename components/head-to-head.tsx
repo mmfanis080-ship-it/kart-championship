@@ -20,9 +20,9 @@ export type H2HDriver = {
 function Avatar({ driver }: { driver: H2HDriver }) {
   return driver.photo_url ? (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={driver.photo_url} alt="" className="size-20 rounded-full border border-border object-cover md:size-24" />
+    <img src={driver.photo_url} alt="" className="size-16 rounded-full border border-border object-cover sm:size-20 md:size-24" />
   ) : (
-    <div aria-hidden className="flex size-20 items-center justify-center rounded-full border border-border bg-secondary text-3xl font-black italic text-muted-foreground md:size-24">
+    <div aria-hidden className="flex size-16 items-center justify-center rounded-full border border-border bg-secondary text-3xl font-black italic text-muted-foreground sm:size-20 md:size-24">
       {driver.name.charAt(0)}
     </div>
   )
@@ -76,7 +76,7 @@ export function HeadToHead({ current, others }: { current: H2HDriver; others: H2
           id="h2h-opponent"
           value={other.id}
           onChange={(event) => setOtherId(event.target.value)}
-          className={cn(fieldClass, 'w-auto min-w-44')}
+          className={cn(fieldClass, 'w-full min-w-0 sm:w-auto sm:min-w-44')}
         >
           {others.map((driver) => (
             <option key={driver.id} value={driver.id}>{driver.name}</option>
@@ -84,12 +84,12 @@ export function HeadToHead({ current, others }: { current: H2HDriver; others: H2
         </select>
       </div>
 
-      <div className="flex flex-col gap-8 p-5 md:p-8">
-        <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-4">
+      <div className="flex flex-col gap-6 p-3 sm:gap-8 sm:p-5 md:p-8">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2 sm:grid-cols-[1fr_auto_1fr] sm:gap-4">
           {[current, other].map((driver, index) => (
             <div key={driver.id} className={cn('flex flex-col items-center gap-2 text-center', index === 1 && 'col-start-3 row-start-1')}>
               <Avatar driver={driver} />
-              <span className="text-lg font-black uppercase italic leading-tight tracking-tight md:text-2xl">{driver.name}</span>
+              <span className="break-words text-base font-black uppercase italic leading-tight tracking-tight sm:text-lg md:text-2xl">{driver.name}</span>
               <span className="text-xs text-muted-foreground">{driver.team}</span>
             </div>
           ))}
