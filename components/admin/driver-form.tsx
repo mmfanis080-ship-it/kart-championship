@@ -16,13 +16,12 @@ export function DriverForm({ driver, pointsFromResults = false }: { driver?: Dri
       <Field id={`${prefix}-team`} label="Team" name="team" defaultValue={driver?.team} maxLength={80} />
       <Field
         id={`${prefix}-points`}
-        label={pointsFromResults ? "Points (auto)" : "Points"}
+        label="Points"
         name="points"
         type="number"
         min={0}
         max={9999}
         defaultValue={driver?.points ?? 0}
-        readOnly={pointsFromResults}
       />
       <div className="flex gap-2">
         <Button type="submit" className="h-10 flex-1 font-bold uppercase">
