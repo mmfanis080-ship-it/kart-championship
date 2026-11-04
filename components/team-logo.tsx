@@ -15,7 +15,7 @@ const TEAM_BRANDS: Record<string, TeamBrand> = {
   porsche: { asset: 'porsche', color: '#d3b15d', bg: '#17191f', imageClassName: 'p-0.5' },
   'red bull': { asset: 'red-bull', color: '#1e40ff', battleColor: '#3b82f6', bg: '#17191f', imageClassName: 'p-0.5' },
   renault: { asset: 'renault', color: '#ffd500', battleColor: '#ffd500', bg: '#ffd500', imageClassName: 'p-1' },
-  'nxt / buzi': { asset: 'nxt-buzi', color: '#111111', battleColor: '#f5f5f5', bg: '#ffffff', imageClassName: 'p-0' },
+  'nxt / buzi': { asset: 'nxt-buzi', color: '#ac1db8', battleColor: '#ac1db8', bg: '#ffffff', imageClassName: 'p-0' },
 }
 
 const TEAM_ALIASES: Record<string, keyof typeof TEAM_BRANDS> = {

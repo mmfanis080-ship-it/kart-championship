@@ -3,7 +3,9 @@ import { TeamLogo } from '@/components/team-logo'
 
 const TEAM_COLORS: Record<string, string> = {
   ferrari: '#e10600',
-  'nxt / buzi': '#d946ef',
+  'nxt / buzi': '#ac1db8',
+  buzi: '#ac1db8',
+  nxt: '#ac1db8',
   mercedes: '#14b8a6',
   'red bull': '#3b5bff',
   porsche: '#9ca3af',

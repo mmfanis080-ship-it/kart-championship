@@ -4,6 +4,7 @@ import { TeamLogo } from '@/components/team-logo'
 const TEAM_COLORS: Record<string, string> = {
   mclaren: '#ff8000', ferrari: '#ef3535', mercedes: '#18b8ab',
   porsche: '#bcbcbc', 'red bull': '#4465ff', renault: '#f4cc24',
+  'nxt / buzi': '#ac1db8', buzi: '#ac1db8', nxt: '#ac1db8',
 }
 
 /** Presentation only. Grid order is supplied by Admin / published database; nothing here can edit it. */
