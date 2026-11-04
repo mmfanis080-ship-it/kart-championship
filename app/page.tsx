@@ -55,11 +55,10 @@ export default async function HomePage() {
         </section>
         <section aria-labelledby="tools" className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pb-10 sm:gap-6 sm:pb-16 md:px-6">
           <SectionHeading id="tools" eyebrow="Race day" title="Championship Tools" />
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             {[
               { href: '/head-to-head', title: 'Head-to-Head', description: 'Compare two drivers, race finishes, wins and podiums.' },
-              { href: '/predictor', title: 'Championship Predictor', description: 'Simulate future race points without modifying the real standings.' },
-              { href: '/starting-grid', title: 'Starting Grid Generator', description: 'Draw a random grid or use championship and race order.' },
+              { href: '/starting-grid', title: 'Official Starting Grid', description: 'View the starting order published by Race Control.' },
             ].map(item => <Link key={item.href} href={item.href} className="flex min-h-36 flex-col justify-between gap-4 rounded-sm border border-border bg-card p-5 transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-primary">
               <h3 className="text-xl font-black uppercase italic">{item.title}</h3>
               <p className="text-sm text-muted-foreground">{item.description}</p>

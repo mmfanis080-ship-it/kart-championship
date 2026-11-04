@@ -1,10 +1,14 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import type { PredictorDriver, PredictorRound } from '@/lib/predictor'
+import type { Driver } from '@/lib/championship'
+type PredictorDriver = Driver
+type PredictorRound = { id: string; round: number; name: string }
 import type { StandingsResult } from '@/lib/standings'
+import { publishStartingGrid } from '@/app/admin/starting-grid/actions'
+import { StartingGridCards } from '@/components/starting-grid-cards'
 
-type Props = {drivers: PredictorDriver[]; races: PredictorRound[]; results: StandingsResult[]}
+type Props = {drivers: PredictorDriver[]; races: PredictorRound[]; results: StandingsResult[]; adminMode?: boolean}
 type GridMode = 'random'|'reverse'|'standings'|'lastRace'
 function randomGrid(ids:string[]) {
   const shuffled=[...ids]
@@ -16,7 +20,7 @@ function randomGrid(ids:string[]) {
   }
   return shuffled
 }
-export function StartingGridGenerator({drivers,races,results}:Props){
+export function StartingGridGenerator({drivers,races,results,adminMode=false}:Props){
   const [mode,setMode]=useState<GridMode>('random')
   const [included,setIncluded]=useState<string[]>(drivers.map(d=>d.id))
   const [generated,setGenerated]=useState<string[]|null>(null)
@@ -53,8 +57,12 @@ export function StartingGridGenerator({drivers,races,results}:Props){
     </section>
     <section className="rounded-sm border border-border bg-card p-4 sm:p-6" aria-live="polite">
       <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-black uppercase italic">Starting grid</h2><span className="font-mono text-xs text-muted-foreground">{grid.length} karts</span></div>
-      {grid.length ? <><ol className="mt-4 grid gap-2">{grid.map((id,index)=><li key={id} className="flex min-w-0 items-center gap-3 rounded-sm border border-border bg-background p-3"><span className={`w-10 shrink-0 font-mono text-2xl font-black ${index===0?'text-primary':''}`}>P{index+1}</span><div className="min-w-0"><p className="break-words font-bold uppercase">{byId.get(id)?.name}</p><p className="text-xs text-muted-foreground">{byId.get(id)?.team}</p></div></li>)}</ol><button type="button" onClick={copyGrid} className="mt-4 min-h-12 w-full rounded-sm border border-primary px-4 font-bold uppercase text-primary">{copied?'Copied!':'Copy grid'}</button></>:<p className="mt-5 text-sm text-muted-foreground">Pick your drivers and press Generate to see the grid.</p>}
-      <p className="mt-4 text-xs text-muted-foreground">The generated grid exists only in this browser until you leave or refresh the page. Send the copied grid to the drivers if needed.</p>
+      {grid.length ? <><div className="mt-4"><StartingGridCards driverIds={grid} drivers={drivers} /></div><button type="button" onClick={copyGrid} className="mt-4 min-h-12 w-full rounded-sm border border-primary px-4 font-bold uppercase text-primary">{copied?'Copied!':'Copy grid'}</button></>:<p className="mt-5 text-sm text-muted-foreground">Pick your drivers and press Generate to see the grid.</p>}
+      {adminMode && grid.length > 0 ? <form action={publishStartingGrid} className="mt-4">
+        <input type="hidden" name="driver_ids" value={JSON.stringify(grid)} />
+        <button type="submit" className="min-h-12 w-full rounded-sm bg-primary px-5 font-bold uppercase text-primary-foreground">Publish this grid for everyone</button>
+      </form> : null}
+      <p className="mt-4 text-xs text-muted-foreground">The generated order is a preview until Admin presses Publish. Publication does not change race results or points.</p>
     </section>
   </div>
 }

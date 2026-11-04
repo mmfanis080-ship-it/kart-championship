@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { DriverForm } from '@/components/admin/driver-form'
@@ -68,6 +69,10 @@ export default async function AdminPage({
             <Button type="submit" variant="outline" className="font-bold uppercase">Sign out</Button>
           </form>
         </div>
+
+        <Link href="/admin/starting-grid" className="inline-flex min-h-12 w-fit items-center rounded-sm border border-primary/60 bg-card px-5 py-3 font-bold uppercase text-primary hover:border-primary">
+          Open Starting Grid Generator →
+        </Link>
 
         {source === 'error' && (
           <p role="alert" className="rounded-sm border border-destructive/40 bg-destructive/10 p-3 text-sm">

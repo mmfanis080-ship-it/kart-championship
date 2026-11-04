@@ -63,7 +63,6 @@ export function SiteHeader() {
           ['Laps', '/laps'],
           ['Hall of Fame', '/hall-of-fame'],
           ['H2H', '/head-to-head'],
-          ['Predictor', '/predictor'],
           ['Grid', '/starting-grid'],
           ['Rules', '/rules'],
         ].map(([label, href]) => (
