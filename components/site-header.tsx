@@ -40,6 +40,8 @@ export function SiteHeader() {
           <Link href="/rules" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground sm:block">
             Rules
           </Link>
+          <Link href="/hall-of-fame" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground lg:block">Hall of Fame</Link>
+          <Link href="/#tools" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground lg:block">Tools</Link>
           <Link
             href="/admin"
             className="ml-2 hidden items-center gap-2 rounded-sm border border-border px-3 py-2 transition-colors hover:border-primary hover:text-primary sm:flex"
@@ -59,6 +61,10 @@ export function SiteHeader() {
           ['Calendar', '/#calendar'],
           ['Results', '/#results'],
           ['Laps', '/laps'],
+          ['Hall of Fame', '/hall-of-fame'],
+          ['H2H', '/head-to-head'],
+          ['Predictor', '/predictor'],
+          ['Grid', '/starting-grid'],
           ['Rules', '/rules'],
         ].map(([label, href]) => (
           <Link key={href} href={href} className="shrink-0 rounded-sm px-3 py-2.5 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary">
