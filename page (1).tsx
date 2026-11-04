@@ -1,35 +1,19 @@
 import type { Metadata } from 'next'
-import { LoginForm } from '@/components/auth/login-form'
+import { getChampionship } from '@/lib/championship'
 import { SiteHeader } from '@/components/site-header'
-import { isSupabaseConfigured } from '@/lib/supabase/config'
+import { SiteFooter } from '@/components/site-footer'
+import { DataNotice } from '@/components/data-notice'
+import { H2HSelector } from '@/components/h2h-selector'
+import { getH2HDrivers } from '@/lib/h2h'
 
-export const metadata: Metadata = {
-  title: 'Admin Login | Kart Championship',
-  robots: { index: false },
-}
-
-export default function LoginPage() {
-  return (
-    <>
-      <SiteHeader />
-      <main className="flex min-h-[calc(100svh-4rem)] items-center justify-center px-4 py-16">
-        <div className="relative w-full max-w-sm overflow-hidden rounded-sm border border-border bg-card p-8">
-          <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-primary" />
-          <div className="mb-8 flex flex-col gap-2">
-            <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary">Race Control</p>
-            <h1 className="text-3xl font-black uppercase italic tracking-tight">Admin Login</h1>
-            <p className="text-sm text-muted-foreground">Sign in to update drivers, points and the race calendar.</p>
-          </div>
-
-          {isSupabaseConfigured ? (
-            <LoginForm />
-          ) : (
-            <p role="status" className="rounded-sm border border-primary/30 bg-primary/10 p-4 text-sm leading-relaxed">
-              Admin login needs Supabase. Connect the Supabase integration in project settings to enable sign-in.
-            </p>
-          )}
-        </div>
-      </main>
-    </>
-  )
+export const dynamic = 'force-dynamic'
+export const metadata: Metadata = { title: 'Driver Head-to-Head | Kart Championship' }
+export default async function Page() {
+  const championship = await getChampionship()
+  return <><SiteHeader /><DataNotice source={championship.source} /><main className="mx-auto min-h-[70vh] max-w-6xl px-4 py-10 sm:py-16 md:px-6">
+  <p className="font-mono text-xs font-bold uppercase tracking-widest text-primary">Kart Championship Tools</p>
+  <h1 className="mb-3 mt-2 text-3xl font-black uppercase italic tracking-tight sm:text-5xl">Driver Head-to-Head</h1>
+  <p className="mb-8 text-sm text-muted-foreground">Live championship data · Read-only simulator · Mobile friendly</p>
+  <H2HSelector drivers={getH2HDrivers(championship)} />
+  </main><SiteFooter /></>
 }
