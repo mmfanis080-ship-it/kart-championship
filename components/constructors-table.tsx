@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { TeamLogo } from '@/components/team-logo'
 import type { Constructor } from '@/lib/championship'
 
 export function ConstructorsTable({ constructors }: { constructors: Constructor[] }) {
@@ -19,7 +20,7 @@ export function ConstructorsTable({ constructors }: { constructors: Constructor[
             <div className="flex items-start gap-3">
               <span className={`shrink-0 font-mono text-2xl font-black ${index===0?'text-primary':'text-muted-foreground'}`}>{String(index+1).padStart(2,'0')}</span>
               <div className="min-w-0 flex-1">
-                <p className="break-words text-base font-black uppercase">{team.team}</p>
+                <div className="flex items-center gap-2"><TeamLogo team={team.team} /><p className="break-words text-base font-black uppercase">{team.team}</p></div>
                 <p className="mt-1 break-words text-xs text-muted-foreground">{team.drivers.join(' · ')}</p>
               </div>
               <div className="shrink-0 text-right"><p className="font-mono text-2xl font-black">{team.points}</p><p className="font-mono text-[10px] uppercase text-muted-foreground">Points</p></div>
@@ -51,7 +52,7 @@ export function ConstructorsTable({ constructors }: { constructors: Constructor[
                     {String(position).padStart(2, '0')}
                   </span>
                 </td>
-                <td className="px-4 py-4 text-base font-bold uppercase tracking-tight">{team.team}</td>
+                <td className="px-4 py-4 text-base font-bold uppercase tracking-tight"><span className="flex items-center gap-2"><TeamLogo team={team.team} />{team.team}</span></td>
                 <td className="hidden px-4 py-4 text-sm text-muted-foreground md:table-cell">{team.drivers.join(', ')}</td>
                 <td className="px-4 py-4 text-right font-mono tabular-nums">{team.wins}</td>
                 <td className="px-4 py-4">

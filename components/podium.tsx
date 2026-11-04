@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { TeamLogo } from '@/components/team-logo'
 import { cn } from '@/lib/utils'
 import type { Driver } from '@/lib/championship'
 
@@ -39,7 +40,7 @@ export function Podium({ drivers }: { drivers: Driver[] }) {
               {driver.name}
             </Link>
             <span className="flex items-baseline justify-between gap-2 text-sm text-muted-foreground">
-              {driver.team}
+              <span className="flex items-center gap-2"><TeamLogo team={driver.team} />{driver.team}</span>
               <span className={cn('font-mono text-lg font-bold', position === 1 ? 'text-primary' : 'text-foreground')}>
                 {driver.points} <span className="text-xs text-muted-foreground">PTS</span>
               </span>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { TeamLogo } from '@/components/team-logo'
 import { cn } from '@/lib/utils'
 import { fieldClass } from '@/components/form-styles'
 
@@ -90,7 +91,7 @@ export function HeadToHead({ current, others }: { current: H2HDriver; others: H2
             <div key={driver.id} className={cn('flex flex-col items-center gap-2 text-center', index === 1 && 'col-start-3 row-start-1')}>
               <Avatar driver={driver} />
               <span className="break-words text-base font-black uppercase italic leading-tight tracking-tight sm:text-lg md:text-2xl">{driver.name}</span>
-              <span className="text-xs text-muted-foreground">{driver.team}</span>
+              <span className="flex items-center justify-center gap-2 text-xs text-muted-foreground"><TeamLogo team={driver.team} />{driver.team}</span>
             </div>
           ))}
           <span className="col-start-2 row-start-1 self-center font-mono text-xl font-bold text-muted-foreground">VS</span>

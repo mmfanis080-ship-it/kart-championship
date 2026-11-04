@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { TeamLogo } from '@/components/team-logo'
 import Link from 'next/link'
 import type { Driver,Race,ResultRow } from '@/lib/championship'
 import { finishForm } from '@/lib/battle'
@@ -25,7 +26,7 @@ export function StandingsTable({drivers,races,results}:{drivers:Driver[];races:R
           </span>
           <div className="min-w-0 flex-1">
             <Link href={`/drivers/${d.id}`} className="block break-words text-base font-black uppercase leading-tight hover:text-primary">{d.name}</Link>
-            <p className="mt-1 break-words text-xs text-muted-foreground">{d.team}</p>
+            <div className="mt-1 flex items-center gap-2"><TeamLogo team={d.team} /><p className="break-words text-xs text-muted-foreground">{d.team}</p></div>
           </div>
           <div className="shrink-0 text-right">
             <p className="font-mono text-2xl font-black tabular-nums">{selected?(result?.points??'–'):d.points}</p>
@@ -63,7 +64,7 @@ export function StandingsTable({drivers,races,results}:{drivers:Driver[];races:R
   </div>
   <div className="hidden overflow-x-auto rounded-sm border border-border bg-card sm:block"><table className="w-full min-w-[750px] text-left"><caption className="sr-only">Official standings and race results</caption><thead><tr className="border-b border-border font-mono text-[11px] uppercase text-muted-foreground"><th className="p-3">Pos</th><th className="p-3">Driver</th><th className="p-3">Team</th>{!selected&&complete.map(r=><th className="p-3 text-right" title={r.name} key={r.id}>R{r.round}</th>)}{!selected&&<th className="p-3">Last 5</th>}<th className="p-3 text-right">{selected?'Finish':'Wins'}</th><th className="p-3 text-right">{selected?'Race points':'Gap'}</th><th className="p-3 text-right">Total</th></tr></thead><tbody>{visible.map((d,i)=>{
    const result=scored.get(d.id);const form=finishForm(d.id,complete,results)
-   return <tr key={d.id} className="border-b border-border/50 hover:bg-accent/40"><td className={`p-3 font-mono text-xl font-bold ${i===0?'text-primary':''}`}>{selected&&!result?'–':String(i+1).padStart(2,'0')}</td><td className="p-3 font-bold uppercase"><Link href={`/drivers/${d.id}`} className="hover:text-primary">{d.name}</Link></td><td className="p-3 text-sm text-muted-foreground">{d.team}</td>{!selected&&complete.map(r=><td key={r.id} className="p-3 text-right font-mono text-sm">{d.pointsByRace[r.id]??'–'}</td>)}{!selected&&<td className="p-3"><div className="flex gap-1">{form.length?form.map((p,j)=><span key={j} className={`rounded-sm border px-2 py-1 font-mono text-xs ${p===1?'border-primary text-primary':'border-border text-muted-foreground'}`}>{p??'–'}</span>):'–'}</div></td>}<td className="p-3 text-right font-mono">{selected?(result?`P${result.position}`:'–'):d.wins}</td><td className="p-3 text-right font-mono text-muted-foreground">{selected?(result?.points??'–'):(i===0?'Leader':`−${leader-d.points}`)}</td><td className="p-3 text-right font-mono text-lg font-bold">{d.points}</td></tr>})}</tbody></table></div>
+   return <tr key={d.id} className="border-b border-border/50 hover:bg-accent/40"><td className={`p-3 font-mono text-xl font-bold ${i===0?'text-primary':''}`}>{selected&&!result?'–':String(i+1).padStart(2,'0')}</td><td className="p-3 font-bold uppercase"><Link href={`/drivers/${d.id}`} className="hover:text-primary">{d.name}</Link></td><td className="p-3 text-sm text-muted-foreground"><span className="flex items-center gap-2"><TeamLogo team={d.team}/>{d.team}</span></td>{!selected&&complete.map(r=><td key={r.id} className="p-3 text-right font-mono text-sm">{d.pointsByRace[r.id]??'–'}</td>)}{!selected&&<td className="p-3"><div className="flex gap-1">{form.length?form.map((p,j)=><span key={j} className={`rounded-sm border px-2 py-1 font-mono text-xs ${p===1?'border-primary text-primary':'border-border text-muted-foreground'}`}>{p??'–'}</span>):'–'}</div></td>}<td className="p-3 text-right font-mono">{selected?(result?`P${result.position}`:'–'):d.wins}</td><td className="p-3 text-right font-mono text-muted-foreground">{selected?(result?.points??'–'):(i===0?'Leader':`−${leader-d.points}`)}</td><td className="p-3 text-right font-mono text-lg font-bold">{d.points}</td></tr>})}</tbody></table></div>
   <p className="text-xs text-muted-foreground">The official ranking uses stored editable totals. Round views only display race results; neither ratings nor manual points are overwritten.</p>
  </div>
 }

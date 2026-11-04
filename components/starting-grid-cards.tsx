@@ -1,4 +1,5 @@
 import type { Driver } from '@/lib/championship'
+import { TeamLogo } from '@/components/team-logo'
 
 const TEAM_COLORS: Record<string, string> = {
   mclaren: '#ff8000', ferrari: '#ef3535', mercedes: '#18b8ab',
@@ -27,7 +28,7 @@ export function StartingGridCards({ driverIds, drivers }: { driverIds: string[];
               const color = TEAM_COLORS[team.toLowerCase()] ?? '#db2638'
               const name = driver?.name ?? 'Unknown driver'
               return (
-                <article key={id} className="relative isolate min-h-[230px] overflow-hidden rounded-lg border border-white/15 bg-[#101117] text-white sm:min-h-[330px] lg:min-h-[405px]" style={{ background: `linear-gradient(155deg, ${color}32 0%, #151620 47%, #090a0d 100%)` }}>
+                <article key={id} className={`relative isolate min-h-[230px] overflow-hidden rounded-lg border border-white/15 bg-[#101117] text-white sm:min-h-[330px] lg:min-h-[405px] ${slot === 0 ? "col-start-2 row-start-1" : "col-start-1 row-start-1"}`} style={{ background: `linear-gradient(155deg, ${color}32 0%, #151620 47%, #090a0d 100%)` }}>
                   <div className="absolute inset-x-0 top-0 h-1" style={{ backgroundColor: color }} />
                   <div className="absolute -right-3 top-6 select-none text-[7rem] font-black leading-none text-white/[0.055] sm:text-[12rem] lg:text-[15rem]" aria-hidden>{position}</div>
                   {driver?.photo_url ? (
@@ -43,12 +44,12 @@ export function StartingGridCards({ driverIds, drivers }: { driverIds: string[];
                       <span className="h-px flex-1 bg-white/25" />
                     </div>
                     <h3 className="break-words text-lg font-black uppercase italic leading-[1.02] tracking-tight sm:text-3xl lg:text-4xl">{name}</h3>
-                    <p className="mt-1 truncate font-mono text-[10px] font-bold uppercase tracking-widest sm:text-xs" style={{ color }}>{team}</p>
+                    <div className="mt-2 flex items-center gap-2"><TeamLogo team={team} size="sm" /><p className="min-w-0 truncate font-mono text-[10px] font-bold uppercase tracking-widest sm:text-xs" style={{ color }}>{team}</p></div>
                   </div>
                 </article>
               )
             })}
-            {pair.length === 1 ? <div aria-hidden className="flex min-h-[230px] items-center justify-center rounded-lg border border-dashed border-white/10 bg-card/25 text-center text-xs uppercase tracking-widest text-muted-foreground sm:min-h-[330px]">Empty grid slot</div> : null}
+            {pair.length === 1 ? <div aria-hidden className="col-start-1 row-start-1 flex min-h-[230px] items-center justify-center rounded-lg border border-dashed border-white/10 bg-card/25 text-center text-xs uppercase tracking-widest text-muted-foreground sm:min-h-[330px]">Empty grid slot</div> : null}
           </div>
         </section>
       ))}

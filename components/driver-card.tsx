@@ -1,4 +1,5 @@
 import type { Ratings } from '@/lib/ratings'
+import { TeamLogo } from '@/components/team-logo'
 
 const TEAM_COLORS: Record<string, string> = {
   ferrari: '#e10600',
@@ -81,7 +82,7 @@ export function DriverCard({
             <span>P{position}</span>
           </div>
           <h1 className="break-words text-3xl font-black uppercase italic leading-none tracking-tight sm:break-normal sm:text-4xl">{name}</h1>
-          <p className="font-mono text-sm font-bold uppercase tracking-widest" style={{ color }}>{team}</p>
+          <div className="flex items-center gap-2"><TeamLogo team={team} size="md"/><p className="font-mono text-sm font-bold uppercase tracking-widest" style={{ color }}>{team}</p></div>
           <dl
             className="mt-1 grid grid-cols-4 divide-x divide-white/20 rounded-xl py-2"
             style={{ background: `color-mix(in srgb, ${color} 70%, #000)` }}

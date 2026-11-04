@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { TeamLogo } from '@/components/team-logo'
 import { ArrowLeft, Crown, Trophy } from 'lucide-react'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
@@ -32,7 +33,7 @@ export default async function HallOfFamePage({ searchParams }: {searchParams: Pr
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {champions[active].map(champion => <article key={champion.season} className="relative overflow-hidden rounded-sm border border-primary/50 bg-card p-6 sm:p-8">
           <div className="flex items-center justify-between gap-3"><span className="font-mono text-xs font-bold uppercase tracking-widest text-primary">Season {champion.season}</span><Crown aria-hidden className="size-7 text-primary" /></div>
-          <div className="my-8 flex justify-center"><Trophy aria-label="Championship trophy" className="size-20 text-primary sm:size-24" strokeWidth={1.35} /></div>
+          <div className="my-8 flex justify-center">{active === "teams" ? <TeamLogo team={champion.name} size="lg" /> : <Trophy aria-label="Championship trophy" className="size-20 text-primary sm:size-24" strokeWidth={1.35} />}</div>
           <p className="text-center font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground">{champion.title}</p>
           <h2 className="mt-2 break-words text-center text-4xl font-black uppercase italic tracking-tight sm:text-5xl">{champion.name}</h2>
           <p className="mt-3 text-center text-sm text-muted-foreground">{champion.season} Kart Championship winner</p>

@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { TeamLogo } from '@/components/team-logo'
 import type { ClassifiedResult, Race } from '@/lib/championship'
 
 type RaceResultsProps = {
@@ -52,7 +53,7 @@ export function RaceResults({ races, classifications }: RaceResultsProps) {
                     </span>
                     <span className="flex min-w-0 flex-1 flex-col leading-tight">
                       <span className="break-words font-bold uppercase">{result.driverName}</span>
-                      <span className="text-xs text-muted-foreground">{result.team}</span>
+                      <span className="flex items-center gap-2 text-xs text-muted-foreground"><TeamLogo team={result.team}/>{result.team}</span>
                     </span>
                     <span className="shrink-0 font-mono text-sm tabular-nums sm:text-base">
                       +{result.points} <span className="text-xs text-muted-foreground">PTS</span>
