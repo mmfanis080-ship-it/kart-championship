@@ -3,7 +3,7 @@ import { fieldClass, labelClass } from '@/components/form-styles'
 import type { DriverRow } from '@/lib/championship'
 import { createDriver, deleteDriver, updateDriver } from '@/app/admin/actions'
 
-export function DriverForm({ driver }: { driver?: DriverRow }) {
+export function DriverForm({ driver, pointsFromResults = false }: { driver?: DriverRow; pointsFromResults?: boolean }) {
   const prefix = driver?.id ?? 'new'
 
   return (

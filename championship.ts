@@ -1,5 +1,6 @@
 import { isSupabaseConfigured } from './supabase/config'
 import { createClient } from './supabase/server'
+import { sortDriverStandings } from './standings'
 
 export type DriverRow = {
   id: string
@@ -55,6 +56,7 @@ export type Championship = {
   races: Race[]
   results: ResultRow[]
   source: DataSource
+  pointsFromResults: boolean
   errorMessage?: string
 }
 
@@ -82,10 +84,13 @@ function buildChampionship(
   source: DataSource,
 ): Championship {
   const racesWithResults = new Set(results.map((result) => result.race_id))
+  // Driver points are editable from Admin; race results determine countback.
+  // Admin provides an explicit action to recalculate points from all results.
+  const pointsFromResults = false
 
   // F1 rule: equal points -> most 1st places, then most 2nd places, then most 3rd places, and so on.
-  // Only places that award points take part in the countback.
-  const maxPosition = Math.max(0, ...results.filter((result) => (result.points ?? 0) > 0).map((result) => result.position))
+  // Count ALL classified finishing positions (including positions worth 0 points).
+  const maxPosition = Math.max(0, ...results.filter((result) => result.position > 0).map((result) => result.position))
   const countsFor = (driverId: string) => {
     const counts = Array.from({ length: maxPosition + 1 }, () => 0)
     for (const result of results) {
@@ -130,13 +135,8 @@ function buildChampionship(
         pointsByRace: Object.fromEntries(own.map((result) => [result.race_id, result.points ?? 0])),
       }
     })
-    .sort(
-      (a, b) =>
-        b.points - a.points ||
-        countback(driverCounts.get(a.id) ?? [], driverCounts.get(b.id) ?? []) ||
-        earliestBetter(driverFinishes.get(a.id) ?? [], driverFinishes.get(b.id) ?? []) ||
-        a.name.localeCompare(b.name),
-    )
+
+  const sortedDrivers = sortDriverStandings(drivers, raceRows, results)
 
   const races = [...raceRows]
     .sort((a, b) => a.round - b.round)
@@ -145,7 +145,7 @@ function buildChampionship(
   const byTeam = new Map<string, Constructor>()
   const teamFinishes = new Map<string, number[]>()
   const teamCounts = new Map<string, number[]>()
-  for (const driver of drivers) {
+  for (const driver of sortedDrivers) {
     const entry = byTeam.get(driver.team) ?? { team: driver.team, points: 0, wins: 0, podiums: 0, drivers: [] }
     entry.points += driver.points
     entry.wins += driver.wins
@@ -168,7 +168,7 @@ function buildChampionship(
       a.team.localeCompare(b.team),
   )
 
-  return { drivers, constructors, races, results, source }
+  return { drivers: sortedDrivers, constructors, races, results, source, pointsFromResults }
 }
 
 export async function getChampionship(): Promise<Championship> {
@@ -184,7 +184,7 @@ export async function getChampionship(): Promise<Championship> {
   const failure = drivers.error ?? races.error ?? results.error
   if (failure) {
     console.error('Failed to load championship data:', failure.message)
-    return { drivers: [], constructors: [], races: [], results: [], source: 'error', errorMessage: failure.message }
+    return { drivers: [], constructors: [], races: [], results: [], source: 'error', pointsFromResults: false, errorMessage: failure.message }
   }
 
   return buildChampionship(

@@ -41,7 +41,7 @@ export default async function AdminPage({
   if (!user) redirect('/auth/login')
 
   const [{ error, saved }, championship] = await Promise.all([searchParams, getChampionship()])
-  const { drivers, races, source, errorMessage } = championship
+  const { drivers, races, source, errorMessage, pointsFromResults } = championship
   const nextRound = (races.at(-1)?.round ?? 0) + 1
 
   return (
@@ -84,16 +84,23 @@ export default async function AdminPage({
               </Button>
             </form>
           </div>
+          <p className="text-sm text-muted-foreground">
+            Μπορείς να αλλάξεις χειροκίνητα τους συνολικούς βαθμούς κάθε οδηγού και να πατήσεις Save.
+            Η σειρά της βαθμολογίας ενημερώνεται με τους νέους βαθμούς και σε ισοβαθμία
+            μετράνε οι τερματισμοί των Race Results. Αν αλλάξεις αποτελέσματα αγώνων,
+            πάτησε «Recalculate points from results» για να ξαναϋπολογιστούν τα σύνολα.
+            Προσοχή: ο επανυπολογισμός αντικαθιστά τις χειροκίνητες αλλαγές βαθμών.
+          </p>
           <div className="flex flex-col gap-3">
             {drivers.map((driver) => (
               <div key={driver.id} className="flex flex-col gap-2">
-                <DriverForm driver={driver} />
+                <DriverForm driver={driver} pointsFromResults={pointsFromResults} />
                 <PhotoForm driver={driver} />
               </div>
             ))}
           </div>
           <h3 className="mt-4 font-mono text-xs uppercase tracking-widest text-muted-foreground">Add a driver</h3>
-          <DriverForm />
+          <DriverForm pointsFromResults={pointsFromResults} />
         </section>
 
         <section aria-labelledby="calendar" className="flex scroll-mt-24 flex-col gap-4">
