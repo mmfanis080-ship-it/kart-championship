@@ -41,7 +41,7 @@ export default async function AdminPage({
   if (!user) redirect('/auth/login')
 
   const [{ error, saved }, championship] = await Promise.all([searchParams, getChampionship()])
-  const { drivers, races, source, errorMessage } = championship
+  const { drivers, races, source, errorMessage, pointsFromResults } = championship
   const nextRound = (races.at(-1)?.round ?? 0) + 1
 
   return (
@@ -84,16 +84,22 @@ export default async function AdminPage({
               </Button>
             </form>
           </div>
+          {pointsFromResults && (
+            <p className="text-sm text-muted-foreground">
+              Οι βαθμοί και η σειρά υπολογίζονται αυτόματα από τα Race Results.
+              Αλλαγές βαθμών γίνονται από τα αποτελέσματα του κάθε αγώνα πιο κάτω.
+            </p>
+          )}
           <div className="flex flex-col gap-3">
             {drivers.map((driver) => (
               <div key={driver.id} className="flex flex-col gap-2">
-                <DriverForm driver={driver} />
+                <DriverForm driver={driver} pointsFromResults={pointsFromResults} />
                 <PhotoForm driver={driver} />
               </div>
             ))}
           </div>
           <h3 className="mt-4 font-mono text-xs uppercase tracking-widest text-muted-foreground">Add a driver</h3>
-          <DriverForm />
+          <DriverForm pointsFromResults={pointsFromResults} />
         </section>
 
         <section aria-labelledby="calendar" className="flex scroll-mt-24 flex-col gap-4">

@@ -1,12 +1,15 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { DriverCard } from '@/components/driver-card'
 import { HeadToHead, type H2HDriver } from '@/components/head-to-head'
 import { SectionHeading } from '@/components/section-heading'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { driverHistory, getChampionship } from '@/lib/championship'
 import { formatDate } from '@/lib/format'
+import { getLapSessions } from '@/lib/laps'
+import { computeRatings } from '@/lib/ratings'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,12 +17,13 @@ export const metadata: Metadata = { title: 'Driver | Kart Championship' }
 
 export default async function DriverPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const championship = await getChampionship()
+  const [championship, lapSessions] = await Promise.all([getChampionship(), getLapSessions()])
   const index = championship.drivers.findIndex((driver) => driver.id === id)
   if (index === -1) notFound()
 
   const driver = championship.drivers[index]
   const history = driverHistory(championship, id)
+  const ratings = computeRatings(id, championship.results, lapSessions, driver.name)
 
   const finishesByDriver = new Map<string, Record<string, number>>()
   for (const result of championship.results) {
@@ -59,29 +63,35 @@ export default async function DriverPage({ params }: { params: Promise<{ id: str
         <Link href="/#standings" className="font-mono text-xs uppercase tracking-widest text-muted-foreground hover:text-primary">
           ← Standings
         </Link>
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-end">
-          {driver.photo_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={driver.photo_url} alt={driver.name} className="size-40 rounded-sm border border-border object-cover md:size-52" />
-          ) : (
-            <div aria-hidden className="flex size-40 items-center justify-center rounded-sm border border-border bg-card text-6xl font-black italic text-muted-foreground md:size-52">
-              {driver.name.charAt(0)}
-            </div>
-          )}
-          <div className="flex flex-col gap-2">
-            <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary">{driver.team}</p>
-            <h1 className="text-5xl font-black uppercase italic leading-none tracking-tight md:text-6xl">{driver.name}</h1>
+        <div className="grid gap-8 md:grid-cols-[340px_1fr] md:items-start">
+          <DriverCard name={driver.name} team={driver.team} photoUrl={driver.photo_url} position={index + 1} ratings={ratings} />
+          <div className="flex flex-col gap-6">
+            <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-sm border border-border bg-border sm:grid-cols-3">
+              {stats.map((stat) => (
+                <div key={stat.label} className="flex flex-col gap-2 bg-card p-5">
+                  <dt className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">{stat.label}</dt>
+                  <dd className="font-mono text-3xl font-bold tabular-nums">{stat.value}</dd>
+                </div>
+              ))}
+            </dl>
+            {(ratings.pac === null || ratings.con === null) && (
+              <p className="rounded-sm border border-border bg-card p-4 text-sm text-muted-foreground">
+                Δεν υπάρχουν αρκετοί συνδεδεμένοι χρόνοι γύρων για το PAC ή/και το CON.
+                Έλεγξε ότι τα δεδομένα του <code>lap_results</code> στο Supabase έχουν το σωστό <code>driver_id</code>.
+              </p>
+            )}
+            <details className="rounded-sm border border-border bg-card p-4 text-sm text-muted-foreground">
+              <summary className="cursor-pointer font-semibold text-foreground">Πώς υπολογίζονται οι βαθμοί της κάρτας</summary>
+              <ul className="mt-3 flex list-disc flex-col gap-1.5 pl-5 leading-relaxed">
+                <li><b className="text-foreground">EXP</b> (εμπειρία): 45 + 6 για κάθε αγώνα που έχει τρέξει.</li>
+                <li><b className="text-foreground">RAC</b> (racecraft): η μέση θέση τερματισμού σε σχέση με τους υπόλοιπους. Νίκη = το μέγιστο, τελευταίος = το ελάχιστο.</li>
+                <li><b className="text-foreground">CON</b> (σταθερότητα): πόσο λίγο ξεφεύγουν οι γύροι του από τον τυπικό γύρο του. Βγαίνει από τους χρόνους γύρων.</li>
+                <li><b className="text-foreground">PAC</b> (ταχύτητα): η διαφορά του καλύτερου γύρου του από τον ταχύτερο γύρο της συνεδρίας.</li>
+                <li><b className="text-foreground">RTG</b> (γενικός βαθμός): RAC 40%, PAC 30%, CON 15%, EXP 15%. Όπου δεν υπάρχουν δεδομένα, το κομμάτι παραλείπεται.</li>
+              </ul>
+            </details>
           </div>
         </div>
-
-        <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-sm border border-border bg-border sm:grid-cols-5">
-          {stats.map((stat) => (
-            <div key={stat.label} className="flex flex-col gap-2 bg-card p-5">
-              <dt className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">{stat.label}</dt>
-              <dd className="font-mono text-3xl font-bold tabular-nums">{stat.value}</dd>
-            </div>
-          ))}
-        </dl>
 
         {others.length > 0 && (
           <section aria-label="Head to head" className="flex flex-col gap-6">

@@ -72,7 +72,7 @@ export function DriverCard({
 
         <div className="absolute left-5 top-4 z-10 flex flex-col leading-none" style={{ textShadow: '0 2px 12px rgba(0,0,0,.6)' }}>
           <span className="font-mono text-[11px] font-bold tracking-[0.3em]" style={{ color }}>RTG</span>
-          <span className="text-7xl font-black tabular-nums">{ratings.rtg}</span>
+          <span className="text-7xl font-black tabular-nums">{ratings.rtg ?? '–'}</span>
         </div>
 
         <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-4">

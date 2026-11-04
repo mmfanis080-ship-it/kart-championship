@@ -3,7 +3,7 @@ import { fieldClass, labelClass } from '@/components/form-styles'
 import type { DriverRow } from '@/lib/championship'
 import { createDriver, deleteDriver, updateDriver } from '@/app/admin/actions'
 
-export function DriverForm({ driver }: { driver?: DriverRow }) {
+export function DriverForm({ driver, pointsFromResults = false }: { driver?: DriverRow; pointsFromResults?: boolean }) {
   const prefix = driver?.id ?? 'new'
 
   return (
@@ -16,12 +16,13 @@ export function DriverForm({ driver }: { driver?: DriverRow }) {
       <Field id={`${prefix}-team`} label="Team" name="team" defaultValue={driver?.team} maxLength={80} />
       <Field
         id={`${prefix}-points`}
-        label="Points"
+        label={pointsFromResults ? "Points (auto)" : "Points"}
         name="points"
         type="number"
         min={0}
         max={9999}
         defaultValue={driver?.points ?? 0}
+        readOnly={pointsFromResults}
       />
       <div className="flex gap-2">
         <Button type="submit" className="h-10 flex-1 font-bold uppercase">
