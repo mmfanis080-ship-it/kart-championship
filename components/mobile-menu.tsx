@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Lock, Menu, X } from 'lucide-react'
+import { DriverProfileLink } from '@/components/driver-profile-link'
 
 const links = [
   { label: 'Standings', href: '/#standings' },
@@ -17,11 +18,10 @@ const links = [
   { label: 'Starting Grid', href: '/starting-grid' },
   { label: 'Rules', href: '/rules' },
   { label: 'Awards', href: '/awards' },
-  { label: 'Driver Account', href: '/driver' },
 ]
 
 /** Only visible on narrow screens; the desktop navigation remains unchanged. */
-export function MobileMenu() {
+export function MobileMenu({ driverProfile }: { driverProfile: { name: string; photoUrl: string | null } | null }) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -54,6 +54,9 @@ export function MobileMenu() {
                 className="flex min-h-12 items-center rounded-sm border border-border bg-card p-3 text-xs font-bold uppercase leading-snug focus-visible:outline-2 focus-visible:outline-primary"
               >{item.label}</Link>
             ))}
+          </div>
+          <div className="mt-3" onClick={() => setOpen(false)}>
+            <DriverProfileLink profile={driverProfile} />
           </div>
           <Link
             href="/admin"

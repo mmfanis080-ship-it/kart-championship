@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import { Lock } from 'lucide-react'
 import { MobileMenu } from '@/components/mobile-menu'
+import { getDriverSession } from '@/lib/driver-session'
+import { isSupabaseConfigured } from '@/lib/supabase/config'
+import { DriverProfileLink } from '@/components/driver-profile-link'
 
 const mainLinks = [
   { label: 'Standings', href: '/#standings' },
@@ -21,7 +24,23 @@ const moreLinks = [
   { label: 'Rules', href: '/rules' },
 ]
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  let driverProfile: { name: string; photoUrl: string | null } | null = null
+  if (isSupabaseConfigured) {
+    try {
+      const { supabase, driverId } = await getDriverSession()
+      if (driverId) {
+        const { data } = await supabase
+          .from('drivers')
+          .select('name, photo_url')
+          .eq('id', driverId)
+          .maybeSingle()
+        if (data) driverProfile = { name: data.name, photoUrl: data.photo_url }
+      }
+    } catch (error) {
+      console.error('Unable to load header driver profile:', error)
+    }
+  }
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
       <div className="mx-auto flex h-[76px] max-w-[1600px] items-center justify-between gap-3 px-4 md:px-6 xl:gap-5">
@@ -73,12 +92,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden shrink-0 items-center gap-2 xl:flex">
-          <Link
-            href="/driver"
-            className="whitespace-nowrap rounded-sm border border-primary/60 px-3 py-2 text-xs font-bold uppercase text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
-          >
-            Driver Sign In
-          </Link>
+          <DriverProfileLink profile={driverProfile} />
           <Link
             href="/admin"
             className="flex items-center gap-2 whitespace-nowrap rounded-sm border border-border px-3 py-2 text-xs font-bold uppercase transition-colors hover:border-primary hover:text-primary"
@@ -88,7 +102,7 @@ export function SiteHeader() {
           </Link>
         </div>
 
-        <MobileMenu />
+        <MobileMenu driverProfile={driverProfile} />
       </div>
 
       <nav aria-label="Quick sections" className="mobile-section-rail flex gap-1 overflow-x-auto border-t border-border px-3 py-1 text-xs font-semibold uppercase tracking-wide sm:hidden">
@@ -105,7 +119,7 @@ export function SiteHeader() {
           ['Head-to-Head', '/head-to-head'],
           ['Starting Grid', '/starting-grid'],
           ['Rules', '/rules'],
-          ['Driver Account', '/driver'],
+          [driverProfile?.name ?? 'Driver Sign In', '/driver'],
         ].map(([label, href]) => (
           <Link
             key={href}
