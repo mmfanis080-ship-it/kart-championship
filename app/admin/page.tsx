@@ -2,8 +2,8 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { DriverForm } from '@/components/admin/driver-form'
-import { AttendanceLinkManager } from '@/components/admin/attendance-link-manager'
-import type { AttendanceEntry, AttendanceLinkInfo } from '@/lib/attendance'
+
+import type { AttendanceEntry } from '@/lib/attendance'
 import { PhotoForm } from '@/components/admin/photo-form'
 import { RaceForm } from '@/components/admin/race-form'
 import { TrackImageForm } from '@/components/admin/track-image-form'
@@ -13,8 +13,9 @@ import { SiteHeader } from '@/components/site-header'
 import { Button } from '@/components/ui/button'
 import { classifyRace, getChampionship } from '@/lib/championship'
 import { isSupabaseConfigured } from '@/lib/supabase/config'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdminSession } from '@/lib/driver-session'
 import { signOut, syncPointsFromResults } from './actions'
+import { assignDriverEmail, removeDriverEmail } from './driver-accounts-actions'
 
 export const metadata: Metadata = {
   title: 'Race Control | Kart Championship',
@@ -38,19 +39,13 @@ export default async function AdminPage({
 }) {
   if (!isSupabaseConfigured) redirect('/auth/login')
 
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  const { supabase, user } = await requireAdminSession()
 
-  const [{ error, saved }, championship, linkQuery, entryQuery] = await Promise.all([
+  const [{ error, saved }, championship, entryQuery] = await Promise.all([
     searchParams, getChampionship(),
-    supabase.from('attendance_links').select('driver_id, expires_at, revoked_at'),
     supabase.from('attendance_entries').select('race_id, driver_id, choice, updated_at'),
   ])
-  const attendanceReady = !linkQuery.error && !entryQuery.error
-  const links = (linkQuery.data ?? []) as AttendanceLinkInfo[]
+  const { data: approvedEmails } = await supabase.from('driver_login_emails').select('driver_id,email')
   const attendanceEntries = (entryQuery.data ?? []) as AttendanceEntry[]
   const { drivers, races, source, errorMessage, pointsFromResults } = championship
   const nextRound = (races.at(-1)?.round ?? 0) + 1
@@ -69,6 +64,20 @@ export default async function AdminPage({
             <Button type="submit" variant="outline" className="font-bold uppercase">Sign out</Button>
           </form>
         </div>
+
+        <section id="driver-accounts" className="rounded-sm border border-border bg-card p-5">
+          <h2 className="mb-2 text-xl font-black uppercase">Driver Accounts · Approved Emails</h2>
+          <p className="mb-4 text-sm text-muted-foreground">Assign one verified email address per driver. A driver can then use the six-digit code at /driver/login. Only listed emails gain driver privileges.</p>
+          <div className="grid gap-3 sm:grid-cols-2">{drivers.map(d => {
+            const approved = (approvedEmails ?? []).find(e => e.driver_id === d.id)
+            return <div key={d.id} className="rounded-sm border border-border p-3">
+              <p className="mb-2 font-bold">{d.name} · {d.team}</p>
+              <form action={assignDriverEmail} className="flex flex-col gap-2"><input type="hidden" name="driver_id" value={d.id}/><input aria-label={`Email for ${d.name}`} name="email" type="email" required defaultValue={approved?.email ?? ''} placeholder="driver@example.com" className="min-h-11 w-full rounded-sm border border-border bg-background px-2"/><button type="submit" className="min-h-11 rounded-sm bg-primary px-3 text-sm font-bold text-primary-foreground">Save approved email</button></form>
+              {approved && <form action={removeDriverEmail} className="mt-2"><input type="hidden" name="driver_id" value={d.id}/><button type="submit" className="text-xs text-red-400 underline">Revoke driver account access</button></form>}
+            </div>
+          })}</div>
+        </section>
+        <Link href="/admin/awards" className="inline-flex min-h-12 w-fit items-center rounded-sm border border-primary/60 bg-card px-5 py-3 font-bold uppercase text-primary hover:border-primary">Manage Driver of the Day and Overtake Awards →</Link>
 
         <Link href="/admin/starting-grid" className="inline-flex min-h-12 w-fit items-center rounded-sm border border-primary/60 bg-card px-5 py-3 font-bold uppercase text-primary hover:border-primary">
           Open Starting Grid Generator →
@@ -131,9 +140,8 @@ export default async function AdminPage({
         </section>
 
         <section aria-labelledby="attendance-links" className="flex scroll-mt-24 flex-col gap-4">
-          <SectionHeading id="attendance-links" eyebrow="Private driver access" title="Attendance Links" />
-          <p className="text-sm text-muted-foreground">Πάτησε Create / rotate, στείλε τον προσωπικό σύνδεσμο ιδιωτικά και κράτησέ τον μυστικό. Νέος σύνδεσμος ακυρώνει τον προηγούμενο. Revoke ακυρώνει την πρόσβαση.</p>
-          {!attendanceReady ? <p className="rounded-sm border border-amber-500/40 p-4 text-sm">Run scripts/006_championship_upgrade.sql in Supabase SQL Editor to enable Attendance.</p> : <AttendanceLinkManager drivers={drivers} links={links} entries={attendanceEntries} />}
+          <SectionHeading id="attendance-links" eyebrow="Driver dashboard" title="Race Attendance" />
+          <p className="text-sm text-muted-foreground">Οι οδηγοί δηλώνουν παρουσία μέσα από το προσωπικό τους dashboard με OTP login. Οι παλιοί προσωπικοί σύνδεσμοι απενεργοποιούνται από το migration 008.</p>
           <div className="rounded-sm border border-border bg-card p-4 sm:hidden">
             <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted-foreground">Responses per upcoming race · Admin only</p>
             <div className="grid gap-3">{races.filter(r=>!r.completed).map(r=>{

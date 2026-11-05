@@ -42,6 +42,8 @@ export function SiteHeader() {
           </Link>
           <Link href="/hall-of-fame" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground lg:block">Hall of Fame</Link>
           <Link href="/#tools" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground lg:block">Tools</Link>
+          <Link href="/awards" className="hidden rounded-sm px-3 py-2 text-muted-foreground hover:text-foreground lg:block">Awards</Link>
+          <Link href="/driver" className="rounded-sm px-2 py-2 text-primary hover:text-foreground sm:px-3">Driver Sign In</Link>
           <Link
             href="/admin"
             className="ml-2 hidden items-center gap-2 rounded-sm border border-border px-3 py-2 transition-colors hover:border-primary hover:text-primary sm:flex"
@@ -65,6 +67,8 @@ export function SiteHeader() {
           ['H2H', '/head-to-head'],
           ['Grid', '/starting-grid'],
           ['Rules', '/rules'],
+          ['Awards', '/awards'],
+          ['Driver Account', '/driver'],
         ].map(([label, href]) => (
           <Link key={href} href={href} className="shrink-0 rounded-sm px-3 py-2.5 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary">
             {label}

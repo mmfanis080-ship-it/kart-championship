@@ -12,6 +12,7 @@ import { driverHistory, getChampionship } from '@/lib/championship'
 import { formatDate } from '@/lib/format'
 import { getLapSessions } from '@/lib/laps'
 import { computeRatings } from '@/lib/ratings'
+import { getDriverAchievements } from '@/lib/achievements'
 
 export const dynamic = 'force-dynamic'
 
@@ -56,6 +57,7 @@ export default async function DriverPage({ params }: { params: Promise<{ id: str
   const recent = finishForm(id, championship.races, championship.results)
   const lapHistory = lapSessions.flatMap(session=>session.results.filter(result=>result.driver_id===id && result.best_ms>0)
     .map(result=>({ session:session.name, track:session.track, best:result.best_ms, date:session.session_date }))).sort((a,b)=>(b.date??'').localeCompare(a.date??''))
+  const achievements = getDriverAchievements(id, championship.races, championship.results)
   const stats = [
     { label: 'Position', value: `P${index + 1}` },
     { label: 'Points', value: driver.points },
@@ -73,6 +75,10 @@ export default async function DriverPage({ params }: { params: Promise<{ id: str
         <Link href="/#standings" className="font-mono text-xs uppercase tracking-widest text-muted-foreground hover:text-primary">
           ← Standings
         </Link>
+        <section className="rounded-sm border border-border bg-card p-4 sm:p-6">
+          <h2 className="mb-4 text-xl font-black uppercase italic">Career Achievements</h2>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">{achievements.map(a=><div key={a.key} className={`rounded-sm border p-3 ${a.unlocked?'border-amber-500/50':'border-border opacity-60'}`}><span className="text-xl" aria-hidden>{a.unlocked?'🏆':'🔒'}</span><h3 className="mt-2 text-sm font-bold">{a.title}</h3><p className="mt-1 text-xs text-muted-foreground">{a.description}</p><p className="mt-2 font-mono text-xs">{Math.min(a.progress,a.target)}/{a.target}</p></div>)}</div>
+        </section>
         <div className="grid gap-8 md:grid-cols-[340px_1fr] md:items-start">
           <DriverCard name={driver.name} team={driver.team} photoUrl={driver.photo_url} position={index + 1} ratings={ratings} />
           <div className="flex flex-col gap-6">

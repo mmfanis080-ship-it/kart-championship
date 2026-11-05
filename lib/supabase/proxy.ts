@@ -34,5 +34,15 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // Authentication alone is NOT authorization for Race Control.
+  if (request.nextUrl.pathname.startsWith('/admin') && user) {
+    const { data: admin, error } = await supabase.rpc('is_admin')
+    if (error || admin !== true) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/driver'
+      return NextResponse.redirect(url)
+    }
+  }
+
   return supabaseResponse
 }

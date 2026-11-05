@@ -16,6 +16,8 @@ const links = [
   { label: 'Head-to-Head', href: '/head-to-head' },
   { label: 'Starting Grid', href: '/starting-grid' },
   { label: 'Rules', href: '/rules' },
+  { label: 'Awards', href: '/awards' },
+  { label: 'Driver Account', href: '/driver' },
 ]
 
 /** Only visible on narrow screens; the desktop navigation remains unchanged. */

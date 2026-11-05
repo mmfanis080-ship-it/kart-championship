@@ -45,6 +45,8 @@ export default async function HomePage() {
             {[
               { href: '/head-to-head', title: 'Head-to-Head', description: 'Compare two drivers, race finishes, wins and podiums.' },
               { href: '/starting-grid', title: 'Official Starting Grid', description: 'View the starting order published by Race Control.' },
+              { href: '/awards', title: 'Driver Awards', description: 'See nominees, onboard overtakes and the Driver of the Day.' },
+              { href: '/driver', title: 'My Driver Dashboard', description: 'Attendance, weekly achievements and award voting.' },
             ].map(item => <Link key={item.href} href={item.href} className="flex min-h-36 flex-col justify-between gap-4 rounded-sm border border-border bg-card p-5 transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-primary">
               <h3 className="text-xl font-black uppercase italic">{item.title}</h3>
               <p className="text-sm text-muted-foreground">{item.description}</p>
