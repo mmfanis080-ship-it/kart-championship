@@ -2,59 +2,96 @@ import Link from 'next/link'
 import { Lock } from 'lucide-react'
 import { MobileMenu } from '@/components/mobile-menu'
 
+const mainLinks = [
+  { label: 'Standings', href: '/#standings' },
+  { label: 'Battle', href: '/#battle' },
+  { label: 'Attendance', href: '/#attendance' },
+  { label: 'Teams', href: '/#constructors' },
+  { label: 'Calendar', href: '/#calendar' },
+  { label: 'Results', href: '/#results' },
+  { label: 'Awards', href: '/awards' },
+]
+
+const moreLinks = [
+  { label: 'Lap Comparison', href: '/laps' },
+  { label: 'Hall of Fame', href: '/hall-of-fame' },
+  { label: 'Head-to-Head', href: '/head-to-head' },
+  { label: 'Starting Grid', href: '/starting-grid' },
+  { label: 'Championship Tools', href: '/#tools' },
+  { label: 'Rules', href: '/rules' },
+]
+
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:gap-6 md:px-6">
-        <Link href="/" className="flex min-w-0 items-center gap-2 sm:gap-3" aria-label="Kart Championship home">
-          <span aria-hidden className="flex h-8 items-center">
-            <span className="h-8 w-2 -skew-x-12 bg-primary" />
-            <span className="ml-1 h-8 w-1 -skew-x-12 bg-primary/60" />
+    <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
+      <div className="mx-auto flex h-[76px] max-w-[1600px] items-center justify-between gap-3 px-4 md:px-6 xl:gap-5">
+        <Link
+          href="/"
+          className="flex min-w-0 shrink-0 items-center gap-3"
+          aria-label="Kart Championship home"
+        >
+          <span aria-hidden className="flex h-9 items-center gap-1">
+            <span className="h-9 w-2 -skew-x-12 bg-primary" />
+            <span className="h-9 w-1 -skew-x-12 bg-primary/60" />
           </span>
-          <span className="flex min-w-0 flex-col leading-none">
-            <span className="text-[15px] font-black uppercase italic tracking-tight min-[380px]:text-lg">Kart Championship</span>
+          <span className="flex min-w-0 flex-col leading-tight">
+            <span className="max-w-[185px] text-base font-black uppercase italic tracking-tight sm:text-lg xl:max-w-none">
+              Kart Championship
+            </span>
             <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
               Season 2026
             </span>
           </span>
         </Link>
 
-        <nav aria-label="Main" className="flex items-center gap-1 text-sm font-semibold uppercase tracking-wide">
-          <Link href="/#standings" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground sm:block">
-            Standings
+        <nav aria-label="Main navigation" className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 xl:flex 2xl:gap-1">
+          {mainLinks.map(({ label, href }) => (
+            <Link
+              key={href}
+              href={href}
+              className="shrink-0 whitespace-nowrap rounded-sm px-2.5 py-2 text-[11px] font-bold uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground 2xl:px-3 2xl:text-xs"
+            >
+              {label}
+            </Link>
+          ))}
+          <details className="group relative shrink-0">
+            <summary className="list-none cursor-pointer whitespace-nowrap rounded-sm px-2.5 py-2 text-[11px] font-bold uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground 2xl:px-3 2xl:text-xs [&::-webkit-details-marker]:hidden">
+              More ▾
+            </summary>
+            <div className="absolute right-0 top-full z-50 mt-3 w-56 rounded-md border border-border bg-background p-2 shadow-xl">
+              {moreLinks.map(({ label, href }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="block whitespace-nowrap rounded-sm px-3 py-2.5 text-xs font-semibold uppercase text-muted-foreground hover:bg-card hover:text-foreground"
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </details>
+        </nav>
+
+        <div className="hidden shrink-0 items-center gap-2 xl:flex">
+          <Link
+            href="/driver"
+            className="whitespace-nowrap rounded-sm border border-primary/60 px-3 py-2 text-xs font-bold uppercase text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+          >
+            Driver Sign In
           </Link>
-          <Link href="/#battle" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground lg:block">Battle</Link>
-          <Link href="/#attendance" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground lg:block">Attendance</Link>
-          <Link href="/#constructors" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground sm:block">
-            Teams
-          </Link>
-          <Link href="/#calendar" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground sm:block">
-            Calendar
-          </Link>
-          <Link href="/#results" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground sm:block">
-            Results
-          </Link>
-          <Link href="/laps" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground sm:block">
-            Laps
-          </Link>
-          <Link href="/rules" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground sm:block">
-            Rules
-          </Link>
-          <Link href="/hall-of-fame" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground lg:block">Hall of Fame</Link>
-          <Link href="/#tools" className="hidden rounded-sm px-3 py-2 text-muted-foreground transition-colors hover:text-foreground lg:block">Tools</Link>
-          <Link href="/awards" className="hidden rounded-sm px-3 py-2 text-muted-foreground hover:text-foreground lg:block">Awards</Link>
-          <Link href="/driver" className="rounded-sm px-2 py-2 text-primary hover:text-foreground sm:px-3">Driver Sign In</Link>
           <Link
             href="/admin"
-            className="ml-2 hidden items-center gap-2 rounded-sm border border-border px-3 py-2 transition-colors hover:border-primary hover:text-primary sm:flex"
+            className="flex items-center gap-2 whitespace-nowrap rounded-sm border border-border px-3 py-2 text-xs font-bold uppercase transition-colors hover:border-primary hover:text-primary"
           >
             <Lock className="size-3.5" aria-hidden />
             Admin
           </Link>
-        </nav>
+        </div>
+
         <MobileMenu />
       </div>
-      <nav aria-label="Sections" className="mobile-section-rail flex gap-1 overflow-x-auto border-t border-border px-3 py-1 text-xs font-semibold uppercase tracking-wide sm:hidden">
+
+      <nav aria-label="Quick sections" className="mobile-section-rail flex gap-1 overflow-x-auto border-t border-border px-3 py-1 text-xs font-semibold uppercase tracking-wide sm:hidden">
         {[
           ['Standings', '/#standings'],
           ['Battle', '/#battle'],
@@ -62,15 +99,19 @@ export function SiteHeader() {
           ['Teams', '/#constructors'],
           ['Calendar', '/#calendar'],
           ['Results', '/#results'],
+          ['Awards', '/awards'],
           ['Laps', '/laps'],
           ['Hall of Fame', '/hall-of-fame'],
-          ['H2H', '/head-to-head'],
-          ['Grid', '/starting-grid'],
+          ['Head-to-Head', '/head-to-head'],
+          ['Starting Grid', '/starting-grid'],
           ['Rules', '/rules'],
-          ['Awards', '/awards'],
           ['Driver Account', '/driver'],
         ].map(([label, href]) => (
-          <Link key={href} href={href} className="shrink-0 rounded-sm px-3 py-2.5 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary">
+          <Link
+            key={href}
+            href={href}
+            className="shrink-0 whitespace-nowrap rounded-sm px-3 py-2.5 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary"
+          >
             {label}
           </Link>
         ))}

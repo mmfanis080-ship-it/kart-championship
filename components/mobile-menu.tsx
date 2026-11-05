@@ -25,7 +25,7 @@ export function MobileMenu() {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="relative shrink-0 sm:hidden" onKeyDown={(event) => {
+    <div className="relative shrink-0 xl:hidden" onKeyDown={(event) => {
       if (event.key === 'Escape') setOpen(false)
     }}>
       <button
