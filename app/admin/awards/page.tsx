@@ -5,7 +5,7 @@ import { OvertakeUpload } from '@/components/admin/overtake-upload'
 import { ConfirmDeleteButton } from '@/components/admin/confirm-delete-button'
 import { getChampionship } from '@/lib/championship'
 import { requireAdminSession } from '@/lib/driver-session'
-import { createAward, addNominee, setAwardPublished, updateAward, deleteAward, updateNominee, deleteNominee } from './actions'
+import { createAward, addNominee, setAwardPublished, updateAward, deleteAward, updateNominee, deleteNominee, addMissingDriverOfDayNominees } from './actions'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Manage Awards | Kart Championship', robots: { index: false } }
@@ -85,6 +85,13 @@ export default async function Page({searchParams}:{searchParams:Promise<{error?:
          </form>
         </details>
        </div>)}</div>
+       {a.kind==='driver_of_the_day'&&<div className="mb-4 rounded-md border border-sky-500/30 bg-sky-500/5 p-3">
+        <p className="mb-2 text-xs text-muted-foreground">Drivers are nominated automatically when you create a Driver of the Day. Use Delete next to anyone who did not race. This button restores missing nominees only if you choose it.</p>
+        <form action={addMissingDriverOfDayNominees}>
+          <input type="hidden" name="award_id" value={a.id}/>
+          <button type="submit" className="min-h-11 rounded-sm border border-sky-500/50 px-3 text-xs font-bold uppercase">Add all missing drivers</button>
+        </form>
+       </div>}
        <h4 className="mb-2 text-sm font-bold uppercase">Add nominee</h4>
        <form action={addNominee} className="grid gap-2 sm:grid-cols-2">
         <input type="hidden" name="award_id" value={a.id}/>
