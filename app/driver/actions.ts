@@ -4,19 +4,21 @@ import { requireDriverSession } from '@/lib/driver-session'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
-export type DriverFormState = { message: string; ok: boolean }
+export type DriverFormState = { message: string; ok: boolean; choice?: string | null }
 export async function saveDriverAttendance(_previous: DriverFormState, form: FormData): Promise<DriverFormState> {
   const { supabase, driverId } = await requireDriverSession()
   const race = String(form.get('race_id')??'')
   const choice = String(form.get('choice')??'')
-  if(!/^[0-9a-f-]{36}$/i.test(race) || !['yes','maybe','no'].includes(choice)) return {ok:false,message:'Invalid selection.'}
+  if(!/^[0-9a-f-]{36}$/i.test(race) || !['yes','maybe','no','clear'].includes(choice)) return {ok:false,message:'Invalid selection.'}
   const {data:validRace,error:rError}=await supabase.from('races').select('id').eq('id',race).maybeSingle()
   const {count,error:cError}=await supabase.from('results').select('id',{head:true,count:'exact'}).eq('race_id',race)
   if (rError||cError||!validRace||count) return {ok:false,message:'This race is no longer open for attendance.'}
-  const {error} = await supabase.from('attendance_entries').upsert({race_id:race,driver_id:driverId,choice,updated_at:new Date().toISOString()},{onConflict:'race_id,driver_id'})
+  const {error} = choice==='clear'
+    ? await supabase.from('attendance_entries').delete().eq('race_id',race).eq('driver_id',driverId)
+    : await supabase.from('attendance_entries').upsert({race_id:race,driver_id:driverId,choice,updated_at:new Date().toISOString()},{onConflict:'race_id,driver_id'})
   if(error) return {ok:false,message:'Could not save attendance. Verify that migration 008 was run.'}
   revalidatePath('/driver');revalidatePath('/');revalidatePath('/admin')
-  return {ok:true,message:'Attendance saved.'}
+  return {ok:true,message:choice==='clear'?'Answer cleared.':'Attendance saved.',choice:choice==='clear'?null:choice}
 }
 
 export async function submitAwardVote(_previous: DriverFormState, form: FormData): Promise<DriverFormState> {

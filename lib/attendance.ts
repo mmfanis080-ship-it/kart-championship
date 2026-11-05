@@ -21,3 +21,10 @@ export async function getAttendanceCounts():Promise<AttendanceCount[]>{
   return ((data??[]) as AttendanceCount[]).map(row=>({...row,yes_count:Number(row.yes_count),maybe_count:Number(row.maybe_count),no_count:Number(row.no_count)}))
  }catch{return []}
 }
+
+export type AttendancePublicEntry={race_id:string;driver_id:string;driver_name:string;team:string;choice:'yes'|'maybe'|'no'}
+/** Safe public roster: exposes only the name/team already visible in championship standings. */
+export async function getAttendancePublicRoster():Promise<AttendancePublicEntry[]>{
+ if(!isSupabaseConfigured)return []
+ try{const supabase=await createClient();const {data,error}=await supabase.rpc('attendance_public_roster');if(error)return [];return (data??[]) as AttendancePublicEntry[]}catch{return []}
+}

@@ -3,7 +3,8 @@ import { Calendar } from '@/components/calendar'
 import { ChampionshipBattle } from '@/components/championship-battle'
 import { AttendanceOverview } from '@/components/attendance-overview'
 import { buildBattleSeries } from '@/lib/battle'
-import { getAttendanceCounts } from '@/lib/attendance'
+import { getAttendanceCounts, getAttendancePublicRoster } from '@/lib/attendance'
+import { getDriverSession } from '@/lib/driver-session'
 import { ConstructorsTable } from '@/components/constructors-table'
 import { DataNotice } from '@/components/data-notice'
 import { Hero } from '@/components/hero'
@@ -20,9 +21,10 @@ import { classifyRace, getChampionship } from '@/lib/championship'
 export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
-  const [championship, attendanceCounts] = await Promise.all([getChampionship(), getAttendanceCounts()])
+  const [championship, attendanceCounts, attendanceRoster, session] = await Promise.all([getChampionship(), getAttendanceCounts(), getAttendancePublicRoster(), getDriverSession()])
   const { drivers, constructors, races, source } = championship
   const nextRace = races.find((race) => !race.completed)
+  const {data:myAttendance} = session.driverId ? await session.supabase.from('attendance_entries').select('race_id,choice').eq('driver_id',session.driverId) : {data:[]}
   const classifications = Object.fromEntries(races.map((race) => [race.id, classifyRace(championship, race.id)]))
 
   return (
@@ -67,7 +69,7 @@ export default async function HomePage() {
         </section>
         <section aria-labelledby="attendance" className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pb-10 sm:gap-6 sm:pb-16 md:px-6">
           <SectionHeading id="attendance" eyebrow="Next grid" title="Race Attendance" />
-          <AttendanceOverview races={races} counts={attendanceCounts} />
+          <AttendanceOverview races={races} counts={attendanceCounts} roster={attendanceRoster} driverId={session.driverId} myChoices={Object.fromEntries((myAttendance??[]).map(row=>[row.race_id,row.choice]))} />
         </section>
         <section aria-labelledby="constructors" className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pb-10 sm:gap-8 sm:pb-16 md:px-6">
           <SectionHeading id="constructors" eyebrow="Teams" title="Constructors" />
