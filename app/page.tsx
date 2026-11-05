@@ -5,6 +5,7 @@ import { AttendanceOverview } from '@/components/attendance-overview'
 import { buildBattleSeries } from '@/lib/battle'
 import { getAttendanceCounts, getAttendancePublicRoster } from '@/lib/attendance'
 import { getDriverSession } from '@/lib/driver-session'
+import { RaceDayDriverVote } from '@/components/race-day-driver-vote'
 import { ConstructorsTable } from '@/components/constructors-table'
 import { DataNotice } from '@/components/data-notice'
 import { Hero } from '@/components/hero'
@@ -27,6 +28,35 @@ export default async function HomePage() {
   const {data:myAttendance} = session.driverId ? await session.supabase.from('attendance_entries').select('race_id,choice').eq('driver_id',session.driverId) : {data:[]}
   const classifications = Object.fromEntries(races.map((race) => [race.id, classifyRace(championship, race.id)]))
 
+  // Race-day-only spotlight. Both the linked race date and the award's active window must match.
+  // Athens timezone is explicit so deployments in UTC don't show the poll a day too early/late.
+  const athensDate = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Athens', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date())
+  const today = ['year', 'month', 'day'].map(key => athensDate.find(part => part.type === key)?.value ?? '').join('-')
+  const now = new Date().toISOString()
+  const { data: raceDayEvents } = await session.supabase.from('award_events')
+    .select('id,title,race_id')
+    .eq('published', true)
+    .eq('kind', 'driver_of_the_day')
+    .lte('opens_at', now)
+    .gt('closes_at', now)
+  const raceDayEvent = (raceDayEvents ?? []).find(event => races.some(race =>
+    race.id === event.race_id && race.race_date?.slice(0, 10) === today
+  ))
+  const raceDayRace = races.find(race => race.id === raceDayEvent?.race_id)
+  const { data: raceDayNominees } = raceDayEvent
+    ? await session.supabase.from('award_nominees').select('id,driver_id,title').eq('award_id', raceDayEvent.id)
+    : { data: [] }
+  const { data: myRaceDayVote } = raceDayEvent && session.driverId
+    ? await session.supabase.from('award_votes').select('nominee_id')
+      .eq('award_id', raceDayEvent.id).eq('voter_id', session.driverId).maybeSingle()
+    : { data: null }
+  const raceDayCandidates = (raceDayNominees ?? []).flatMap(nominee => {
+    const driver = drivers.find(d => d.id === nominee.driver_id)
+    return driver ? [{ id: nominee.id, name: driver.name, team: driver.team, photoUrl: driver.photo_url, title: nominee.title }] : []
+  })
+
   return (
     <>
       <SiteHeader />
@@ -39,6 +69,19 @@ export default async function HomePage() {
           <section aria-label="Next race" className="mx-auto max-w-6xl px-4 pt-10 sm:pt-16 md:px-6">
             <NextRaceCard race={nextRace} />
           </section>
+        )}
+
+        {raceDayEvent && raceDayRace && raceDayCandidates.length > 0 && (
+          <div className="mx-auto max-w-6xl px-4 pt-8 pb-8 md:px-6">
+            <RaceDayDriverVote
+              awardId={raceDayEvent.id}
+              title={raceDayEvent.title}
+              raceName={raceDayRace.name}
+              candidates={raceDayCandidates}
+              signedIn={Boolean(session.driverId)}
+              chosen={myRaceDayVote?.nominee_id ?? null}
+            />
+          </div>
         )}
 
         <section aria-labelledby="tools" className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pb-10 sm:gap-6 sm:pb-16 md:px-6">
