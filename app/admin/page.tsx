@@ -15,7 +15,7 @@ import { classifyRace, getChampionship } from '@/lib/championship'
 import { isSupabaseConfigured } from '@/lib/supabase/config'
 import { requireAdminSession } from '@/lib/driver-session'
 import { signOut, syncPointsFromResults } from './actions'
-import { assignDriverEmail, removeDriverEmail } from './driver-accounts-actions'
+import { DriverAccountManager } from '@/components/admin/driver-account-manager'
 
 export const metadata: Metadata = {
   title: 'Race Control | Kart Championship',
@@ -45,7 +45,7 @@ export default async function AdminPage({
     searchParams, getChampionship(),
     supabase.from('attendance_entries').select('race_id, driver_id, choice, updated_at'),
   ])
-  const { data: approvedEmails } = await supabase.from('driver_login_emails').select('driver_id,email')
+  const { data: usernameAccounts } = await supabase.from('driver_username_accounts').select('driver_id,username')
   const attendanceEntries = (entryQuery.data ?? []) as AttendanceEntry[]
   const { drivers, races, source, errorMessage, pointsFromResults } = championship
   const nextRound = (races.at(-1)?.round ?? 0) + 1
@@ -65,17 +65,8 @@ export default async function AdminPage({
           </form>
         </div>
 
-        <section id="driver-accounts" className="rounded-sm border border-border bg-card p-5">
-          <h2 className="mb-2 text-xl font-black uppercase">Driver Accounts · Approved Emails</h2>
-          <p className="mb-4 text-sm text-muted-foreground">Assign one verified email address per driver. A driver can then use the six-digit code at /driver/login. Only listed emails gain driver privileges.</p>
-          <div className="grid gap-3 sm:grid-cols-2">{drivers.map(d => {
-            const approved = (approvedEmails ?? []).find(e => e.driver_id === d.id)
-            return <div key={d.id} className="rounded-sm border border-border p-3">
-              <p className="mb-2 font-bold">{d.name} · {d.team}</p>
-              <form action={assignDriverEmail} className="flex flex-col gap-2"><input type="hidden" name="driver_id" value={d.id}/><input aria-label={`Email for ${d.name}`} name="email" type="email" required defaultValue={approved?.email ?? ''} placeholder="driver@example.com" className="min-h-11 w-full rounded-sm border border-border bg-background px-2"/><button type="submit" className="min-h-11 rounded-sm bg-primary px-3 text-sm font-bold text-primary-foreground">Save approved email</button></form>
-              {approved && <form action={removeDriverEmail} className="mt-2"><input type="hidden" name="driver_id" value={d.id}/><button type="submit" className="text-xs text-red-400 underline">Revoke driver account access</button></form>}
-            </div>
-          })}</div>
+        <section id="driver-accounts">
+          <DriverAccountManager drivers={drivers.map(d => ({id:d.id,name:d.name,team:d.team}))} accounts={usernameAccounts ?? []} />
         </section>
         <Link href="/admin/awards" className="inline-flex min-h-12 w-fit items-center rounded-sm border border-primary/60 bg-card px-5 py-3 font-bold uppercase text-primary hover:border-primary">Manage Driver of the Day and Overtake Awards →</Link>
 
@@ -141,7 +132,7 @@ export default async function AdminPage({
 
         <section aria-labelledby="attendance-links" className="flex scroll-mt-24 flex-col gap-4">
           <SectionHeading id="attendance-links" eyebrow="Driver dashboard" title="Race Attendance" />
-          <p className="text-sm text-muted-foreground">Οι οδηγοί δηλώνουν παρουσία μέσα από το προσωπικό τους dashboard με OTP login. Οι παλιοί προσωπικοί σύνδεσμοι απενεργοποιούνται από το migration 008.</p>
+          <p className="text-sm text-muted-foreground">Οι οδηγοί δηλώνουν παρουσία μέσα από το προσωπικό τους dashboard με username και password. Οι παλιοί προσωπικοί σύνδεσμοι απενεργοποιούνται από το migration 008.</p>
           <div className="rounded-sm border border-border bg-card p-4 sm:hidden">
             <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted-foreground">Responses per upcoming race · Admin only</p>
             <div className="grid gap-3">{races.filter(r=>!r.completed).map(r=>{
