@@ -2,11 +2,14 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { requireAdminSession } from '@/lib/driver-session'
 import { createClient } from '@/lib/supabase/server'
 
 async function requireUser() {
-  const { supabase } = await requireAdminSession()
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/auth/login')
   return supabase
 }
 

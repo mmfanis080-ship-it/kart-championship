@@ -71,7 +71,7 @@ export function PhotoForm({ driver }: { driver: DriverRow }) {
         accept="image/*"
         required
         onChange={onPick}
-        className="w-full max-w-full text-sm sm:w-auto"
+        className="max-w-full text-sm"
       />
       <UploadButton busy={busy} />
       {problem && <p role="alert" className="w-full text-sm text-destructive">{problem}</p>}

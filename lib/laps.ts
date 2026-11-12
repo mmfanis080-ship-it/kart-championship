@@ -19,16 +19,20 @@ export type LapSession = {
   name: string
   track: string
   session_date: string | null
+  round: number | null
+  race_name: string | null
+  first_lap_counts: boolean
   results: LapResult[]
 }
 
 type JoinedDriver = { photo_url: string | null; team: string | null }
+type JoinedRace = { round: number; name: string }
 
 export async function getLapSessions(): Promise<LapSession[]> {
   try {
     const supabase = await createClient()
     const [sessions, results] = await Promise.all([
-      supabase.from('lap_sessions').select('id, name, track, session_date').order('session_date', { ascending: false }),
+      supabase.from('lap_sessions').select('id, name, track, session_date, first_lap_counts, races(round, name)').order('session_date', { ascending: false }),
       supabase
         .from('lap_results')
         .select('id, session_id, driver_id, driver_name, kart, best_ms, s1_ms, s2_ms, s3_ms, laps_ms, drivers(photo_url, team)')
@@ -38,8 +42,16 @@ export async function getLapSessions(): Promise<LapSession[]> {
       console.error('Lap times unavailable:', sessions.error?.message ?? results.error?.message)
       return []
     }
-    return (sessions.data ?? []).map((session) => ({
-      ...session,
+    const mapped: LapSession[] = (sessions.data ?? []).map((session) => {
+      const race = (Array.isArray(session.races) ? session.races[0] : session.races) as JoinedRace | null | undefined
+      return {
+      id: session.id,
+      name: session.name,
+      track: session.track,
+      session_date: session.session_date,
+      round: race?.round ?? null,
+      race_name: race?.name ?? null,
+      first_lap_counts: Boolean(session.first_lap_counts),
       results: (results.data ?? [])
         .filter((row) => row.session_id === session.id)
         .map((row) => {
@@ -58,7 +70,13 @@ export async function getLapSessions(): Promise<LapSession[]> {
             team: joined?.team ?? null,
           }
         }),
-    }))
+      }
+    })
+    // Newest round first; sessions without a round go last
+    return mapped.sort(
+      (a, b) =>
+        (b.round ?? -1) - (a.round ?? -1) || (b.session_date ?? '').localeCompare(a.session_date ?? ''),
+    )
   } catch (error) {
     console.error('Lap times failed:', error)
     return []

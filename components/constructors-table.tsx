@@ -1,5 +1,4 @@
 import { cn } from '@/lib/utils'
-import { TeamLogo } from '@/components/team-logo'
 import type { Constructor } from '@/lib/championship'
 
 export function ConstructorsTable({ constructors }: { constructors: Constructor[] }) {
@@ -13,23 +12,7 @@ export function ConstructorsTable({ constructors }: { constructors: Constructor[
   const leaderPoints = constructors[0].points
 
   return (
-    <>
-      <ol className="grid gap-3 sm:hidden" aria-label="Team standings on mobile">
-        {constructors.map((team,index)=>(
-          <li key={team.team} className="min-w-0 rounded-sm border border-border bg-card p-4">
-            <div className="flex items-start gap-3">
-              <span className={`shrink-0 font-mono text-2xl font-black ${index===0?'text-primary':'text-muted-foreground'}`}>{String(index+1).padStart(2,'0')}</span>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2"><TeamLogo team={team.team} /><p className="break-words text-base font-black uppercase">{team.team}</p></div>
-                <p className="mt-1 break-words text-xs text-muted-foreground">{team.drivers.join(' · ')}</p>
-              </div>
-              <div className="shrink-0 text-right"><p className="font-mono text-2xl font-black">{team.points}</p><p className="font-mono text-[10px] uppercase text-muted-foreground">Points</p></div>
-            </div>
-            <p className="mt-3 border-t border-border pt-3 font-mono text-xs text-muted-foreground">{team.wins} {team.wins===1?'win':'wins'}</p>
-          </li>
-        ))}
-      </ol>
-      <div className="hidden overflow-x-auto rounded-sm border border-border bg-card sm:block">
+    <div className="overflow-x-auto rounded-sm border border-border bg-card">
       <table className="w-full min-w-[520px] border-collapse text-left">
         <caption className="sr-only">Constructors championship standings</caption>
         <thead>
@@ -52,7 +35,7 @@ export function ConstructorsTable({ constructors }: { constructors: Constructor[
                     {String(position).padStart(2, '0')}
                   </span>
                 </td>
-                <td className="px-4 py-4 text-base font-bold uppercase tracking-tight"><span className="flex items-center gap-2"><TeamLogo team={team.team} />{team.team}</span></td>
+                <td className="px-4 py-4 text-base font-bold uppercase tracking-tight">{team.team}</td>
                 <td className="hidden px-4 py-4 text-sm text-muted-foreground md:table-cell">{team.drivers.join(', ')}</td>
                 <td className="px-4 py-4 text-right font-mono tabular-nums">{team.wins}</td>
                 <td className="px-4 py-4">
@@ -68,7 +51,6 @@ export function ConstructorsTable({ constructors }: { constructors: Constructor[
           })}
         </tbody>
       </table>
-      </div>
-    </>
+    </div>
   )
 }

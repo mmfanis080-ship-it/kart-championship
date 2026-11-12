@@ -1,6 +1,5 @@
 import { isSupabaseConfigured } from './supabase/config'
 import { createClient } from './supabase/server'
-import { sortDriverStandings, totalPointsFromResults } from './standings'
 
 export type DriverRow = {
   id: string
@@ -56,7 +55,6 @@ export type Championship = {
   races: Race[]
   results: ResultRow[]
   source: DataSource
-  pointsFromResults: boolean
   errorMessage?: string
 }
 
@@ -84,14 +82,10 @@ function buildChampionship(
   source: DataSource,
 ): Championship {
   const racesWithResults = new Set(results.map((result) => result.race_id))
-  // Race results are the single source of truth once any have been entered.
-  // Before that, preserve the manual driver points for existing/older seasons.
-  const pointsFromResults = results.length > 0
-  const resultTotals = totalPointsFromResults(results)
 
   // F1 rule: equal points -> most 1st places, then most 2nd places, then most 3rd places, and so on.
-  // Count ALL classified finishing positions (including positions worth 0 points).
-  const maxPosition = Math.max(0, ...results.filter((result) => result.position > 0).map((result) => result.position))
+  // Only places that award points take part in the countback.
+  const maxPosition = Math.max(0, ...results.filter((result) => (result.points ?? 0) > 0).map((result) => result.position))
   const countsFor = (driverId: string) => {
     const counts = Array.from({ length: maxPosition + 1 }, () => 0)
     for (const result of results) {
@@ -129,15 +123,20 @@ function buildChampionship(
       const positions = own.map((result) => result.position).filter((p) => p > 0)
       return {
         ...row,
-        points: pointsFromResults ? (resultTotals.get(row.id) ?? 0) : (row.points ?? 0),
+        points: row.points ?? 0,
         wins: positions.filter((p) => p === 1).length,
         podiums: positions.filter((p) => p <= 3).length,
         bestFinish: positions.length > 0 ? Math.min(...positions) : null,
         pointsByRace: Object.fromEntries(own.map((result) => [result.race_id, result.points ?? 0])),
       }
     })
-
-  const sortedDrivers = sortDriverStandings(drivers, raceRows, results)
+    .sort(
+      (a, b) =>
+        b.points - a.points ||
+        countback(driverCounts.get(a.id) ?? [], driverCounts.get(b.id) ?? []) ||
+        earliestBetter(driverFinishes.get(a.id) ?? [], driverFinishes.get(b.id) ?? []) ||
+        a.name.localeCompare(b.name),
+    )
 
   const races = [...raceRows]
     .sort((a, b) => a.round - b.round)
@@ -146,7 +145,7 @@ function buildChampionship(
   const byTeam = new Map<string, Constructor>()
   const teamFinishes = new Map<string, number[]>()
   const teamCounts = new Map<string, number[]>()
-  for (const driver of sortedDrivers) {
+  for (const driver of drivers) {
     const entry = byTeam.get(driver.team) ?? { team: driver.team, points: 0, wins: 0, podiums: 0, drivers: [] }
     entry.points += driver.points
     entry.wins += driver.wins
@@ -169,7 +168,7 @@ function buildChampionship(
       a.team.localeCompare(b.team),
   )
 
-  return { drivers: sortedDrivers, constructors, races, results, source, pointsFromResults }
+  return { drivers, constructors, races, results, source }
 }
 
 export async function getChampionship(): Promise<Championship> {
@@ -185,7 +184,7 @@ export async function getChampionship(): Promise<Championship> {
   const failure = drivers.error ?? races.error ?? results.error
   if (failure) {
     console.error('Failed to load championship data:', failure.message)
-    return { drivers: [], constructors: [], races: [], results: [], source: 'error', pointsFromResults: false, errorMessage: failure.message }
+    return { drivers: [], constructors: [], races: [], results: [], source: 'error', errorMessage: failure.message }
   }
 
   return buildChampionship(

@@ -2,8 +2,6 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { DriverCard } from '@/components/driver-card'
-import { ChampionshipBattle } from '@/components/championship-battle'
-import { buildBattleSeries, finishForm } from '@/lib/battle'
 import { HeadToHead, type H2HDriver } from '@/components/head-to-head'
 import { SectionHeading } from '@/components/section-heading'
 import { SiteFooter } from '@/components/site-footer'
@@ -12,7 +10,6 @@ import { driverHistory, getChampionship } from '@/lib/championship'
 import { formatDate } from '@/lib/format'
 import { getLapSessions } from '@/lib/laps'
 import { computeRatings } from '@/lib/ratings'
-import { getDriverAchievements } from '@/lib/achievements'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,7 +23,7 @@ export default async function DriverPage({ params }: { params: Promise<{ id: str
 
   const driver = championship.drivers[index]
   const history = driverHistory(championship, id)
-  const ratings = computeRatings(id, championship.results, lapSessions, driver.name)
+  const ratings = computeRatings(id, championship.results, lapSessions)
 
   const finishesByDriver = new Map<string, Record<string, number>>()
   for (const result of championship.results) {
@@ -51,21 +48,12 @@ export default async function DriverPage({ params }: { params: Promise<{ id: str
     }
   }
   const others = championship.drivers.filter((entry) => entry.id !== id).map(toH2H)
-  const classified = history.filter(entry=>entry.position>0)
-  const avgFinish = classified.length ? (classified.reduce((sum,entry)=>sum+entry.position,0)/classified.length).toFixed(1) : '–'
-  const completed = championship.races.filter(r=>r.completed).length
-  const recent = finishForm(id, championship.races, championship.results)
-  const lapHistory = lapSessions.flatMap(session=>session.results.filter(result=>result.driver_id===id && result.best_ms>0)
-    .map(result=>({ session:session.name, track:session.track, best:result.best_ms, date:session.session_date }))).sort((a,b)=>(b.date??'').localeCompare(a.date??''))
-  const achievements = getDriverAchievements(id, championship.races, championship.results)
   const stats = [
     { label: 'Position', value: `P${index + 1}` },
     { label: 'Points', value: driver.points },
     { label: 'Wins', value: driver.wins },
     { label: 'Podiums', value: driver.podiums },
     { label: 'Best finish', value: driver.bestFinish ? `P${driver.bestFinish}` : '–' },
-    { label: 'Average finish', value: avgFinish },
-    { label: 'Classified rounds', value: completed ? `${Math.round(classified.length/completed*100)}%` : '–' },
   ]
 
   return (
@@ -75,10 +63,6 @@ export default async function DriverPage({ params }: { params: Promise<{ id: str
         <Link href="/#standings" className="font-mono text-xs uppercase tracking-widest text-muted-foreground hover:text-primary">
           ← Standings
         </Link>
-        <section className="rounded-sm border border-border bg-card p-4 sm:p-6">
-          <h2 className="mb-4 text-xl font-black uppercase italic">Career Achievements</h2>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">{achievements.map(a=><div key={a.key} className={`rounded-sm border p-3 ${a.unlocked?'border-amber-500/50':'border-border opacity-60'}`}><span className="text-xl" aria-hidden>{a.unlocked?'🏆':'🔒'}</span><h3 className="mt-2 text-sm font-bold">{a.title}</h3><p className="mt-1 text-xs text-muted-foreground">{a.description}</p><p className="mt-2 font-mono text-xs">{Math.min(a.progress,a.target)}/{a.target}</p></div>)}</div>
-        </section>
         <div className="grid gap-8 md:grid-cols-[340px_1fr] md:items-start">
           <DriverCard name={driver.name} team={driver.team} photoUrl={driver.photo_url} position={index + 1} ratings={ratings} />
           <div className="flex flex-col gap-6">
@@ -90,12 +74,6 @@ export default async function DriverPage({ params }: { params: Promise<{ id: str
                 </div>
               ))}
             </dl>
-            {(ratings.pac === null || ratings.con === null) && (
-              <p className="rounded-sm border border-border bg-card p-4 text-sm text-muted-foreground">
-                Δεν υπάρχουν αρκετοί συνδεδεμένοι χρόνοι γύρων για το PAC ή/και το CON.
-                Έλεγξε ότι τα δεδομένα του <code>lap_results</code> στο Supabase έχουν το σωστό <code>driver_id</code>.
-              </p>
-            )}
             <details className="rounded-sm border border-border bg-card p-4 text-sm text-muted-foreground">
               <summary className="cursor-pointer font-semibold text-foreground">Πώς υπολογίζονται οι βαθμοί της κάρτας</summary>
               <ul className="mt-3 flex list-disc flex-col gap-1.5 pl-5 leading-relaxed">
@@ -109,15 +87,6 @@ export default async function DriverPage({ params }: { params: Promise<{ id: str
           </div>
         </div>
 
-        <section aria-labelledby="driver-form" className="flex flex-col gap-5">
-          <SectionHeading id="driver-form" eyebrow="Season performance" title="Recent Form & Lap Sessions" />
-          <div className="rounded-sm border border-border bg-card p-5"><p className="mb-3 text-xs uppercase text-muted-foreground">Last five races</p><div className="flex flex-wrap gap-2">{recent.length?recent.map((pos,i)=><span className={`rounded-sm border px-4 py-3 font-mono font-bold ${pos===1?'border-primary text-primary':'border-border'}`} key={i}>{pos?`P${pos}`:'–'}</span>):'No race results yet.'}</div></div>
-          <div className="rounded-sm border border-border bg-card p-5"><p className="mb-3 text-xs uppercase text-muted-foreground">Linked lap sessions</p>{lapHistory.length?<div className="grid gap-2 sm:grid-cols-2">{lapHistory.slice(0,6).map((entry,i)=><div className="rounded-sm border border-border p-3" key={i}><p className="font-bold uppercase">{entry.track}</p><p className="text-xs text-muted-foreground">{entry.session}</p><p className="mt-2 font-mono text-lg font-bold">{(entry.best/1000).toFixed(3)}s</p></div>)}</div>:<p className="text-sm text-muted-foreground">No linked lap times. Check lap_results.driver_id in Supabase.</p>}</div>
-        </section>
-        <section aria-labelledby="driver-points" className="flex flex-col gap-5">
-          <SectionHeading id="driver-points" eyebrow="Race by race" title="Points Progression" />
-          <ChampionshipBattle drivers={[driver]} series={buildBattleSeries([driver],championship.races,championship.results)} />
-        </section>
         {others.length > 0 && (
           <section aria-label="Head to head" className="flex flex-col gap-6">
             <HeadToHead key={id} current={toH2H(driver)} others={others} />
@@ -131,25 +100,7 @@ export default async function DriverPage({ params }: { params: Promise<{ id: str
               No race results yet.
             </p>
           ) : (
-            <>
-            <ol className="grid gap-2 sm:hidden" aria-label="Driver race history">
-              {history.map(entry=>(
-                <li key={entry.id} className="rounded-sm border border-border bg-card p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="font-mono text-xs uppercase text-primary">Round {entry.race.round}</p>
-                      <p className="mt-1 break-words font-bold uppercase">{entry.race.name}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">{formatDate(entry.race.race_date)}</p>
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <p className="font-mono text-lg font-bold">P{entry.position}</p>
-                      <p className="font-mono text-sm text-muted-foreground">+{entry.points} pts</p>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ol>
-            <div className="hidden overflow-x-auto rounded-sm border border-border bg-card sm:block">
+            <div className="overflow-x-auto rounded-sm border border-border bg-card">
               <table className="w-full min-w-[480px] border-collapse text-left">
                 <thead>
                   <tr className="border-b border-border font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
@@ -173,7 +124,6 @@ export default async function DriverPage({ params }: { params: Promise<{ id: str
                 </tbody>
               </table>
             </div>
-            </>
           )}
         </section>
       </main>
