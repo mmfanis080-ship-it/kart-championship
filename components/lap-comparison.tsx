@@ -154,7 +154,8 @@ export function LapComparison({ sessions }: { sessions: LapSession[] }) {
         )}
         <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
           {session.round !== null && `Round ${session.round}${session.race_name ? ` ${session.race_name}` : ''} · `}
-          {session.name} · {session.track}
+          {!/^Round\b/i.test(session.name) && `${session.name} · `}
+          {session.track}
           {session.session_date && ` · ${formatDate(session.session_date)}`} · {results.length} drivers
         </p>
       </div>
