@@ -1,4 +1,5 @@
 import { TeamLogo, getTeamBattleColor } from '@/components/team-logo'
+import { PosterShareActions } from '@/components/poster-share-actions'
 
 type Winner = {
   name: string
@@ -46,5 +47,6 @@ export function AwardWinnerPoster({ winner, awardKind, awardTitle, label }: {
       </div>
     </div>
     <div className="px-4 py-3 text-center font-mono text-[10px] uppercase tracking-widest text-slate-300">{awardTitle}</div>
+    <PosterShareActions winner={winner} awardKind={awardKind} awardTitle={awardTitle} color={c} />
   </article>
 }
