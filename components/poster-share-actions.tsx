@@ -4,7 +4,6 @@ import { useState } from 'react'
 
 // 1080 × 1350 image: shareable in Instagram Stories, chats and social feeds.
 type ShareWinner = {
-type ShareWinner = {
   name: string
   team: string
   photoUrl: string | null
