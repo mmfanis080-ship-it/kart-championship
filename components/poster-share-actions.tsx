@@ -25,12 +25,24 @@ function posterText(ctx: CanvasRenderingContext2D, value: string, x: number, y: 
   ctx.fillText(value, x, y)
 }
 
+// Mobile networks or image hosts can stall without firing load/error.
+// Never block the whole poster on an external image.
 function loadPhoto(src: string): Promise<HTMLImageElement | null> {
   return new Promise(resolve => {
     const img = new Image()
+    let finished = false
+    const timeout = window.setTimeout(() => finish(null), 7000)
+    function finish(value: HTMLImageElement | null) {
+      if (finished) return
+      finished = true
+      window.clearTimeout(timeout)
+      img.onload = null
+      img.onerror = null
+      resolve(value)
+    }
     img.crossOrigin = 'anonymous'
-    img.onload = () => resolve(img)
-    img.onerror = () => resolve(null)
+    img.onload = () => finish(img)
+    img.onerror = () => finish(null)
     img.src = src
   })
 }
@@ -105,7 +117,21 @@ async function generatePoster(winner: ShareWinner, kind: 'driver_of_the_day' | '
   ctx.fillStyle = accent
   ctx.fillRect(0, 1333, w, 17)
   return await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Δεν ήταν δυνατή η δημιουργία PNG.')), 'image/png')
+    let done = false
+    const timeout = window.setTimeout(() => finish(null), 12000)
+    function finish(blob: Blob | null) {
+      if (done) return
+      done = true
+      window.clearTimeout(timeout)
+      if (blob) resolve(blob)
+      else reject(new Error('Η εξαγωγή PNG δεν ολοκληρώθηκε στο κινητό. Δοκίμασε ξανά από Chrome ή Safari.'))
+    }
+    try {
+      canvas.toBlob(finish, 'image/png')
+    } catch (error) {
+      window.clearTimeout(timeout)
+      reject(error)
+    }
   })
 }
 
@@ -131,7 +157,7 @@ export function PosterShareActions({ winner, awardKind, awardTitle, color }: {
   async function handleShare(share: boolean) {
     if (busy) return
     setBusy(true)
-    setMessage('')
+    setMessage('Δημιουργία αφίσας… Η φωτογραφία μπορεί να χρειαστεί λίγα δευτερόλεπτα.')
     try {
       const png = await generatePoster(winner, awardKind, awardTitle, color)
       const filename = `kart-${awardKind}-${winner.name.toLowerCase().replace(/[^a-z0-9\u0370-\u03ff]+/gi, '-')}.png`
@@ -139,7 +165,7 @@ export function PosterShareActions({ winner, awardKind, awardTitle, color }: {
       if (share && typeof navigator.share === 'function' && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
         try {
           await navigator.share({ files: [file], title: `${winner.name} — ${awardTitle}` })
-          setMessage('Η αφίσα είναι έτοιμη για κοινοποίηση.')
+          setMessage('Η κοινοποίηση ολοκληρώθηκε ή παραδόθηκε στην εφαρμογή.')
           return
         } catch (err) {
           if (err instanceof DOMException && err.name === 'AbortError') return
@@ -147,7 +173,7 @@ export function PosterShareActions({ winner, awardKind, awardTitle, color }: {
         }
       }
       saveBlob(png, filename)
-      setMessage(share ? 'Η αφίσα αποθηκεύτηκε ως PNG. Μπορείς να την ανεβάσεις στο Instagram ή να τη στείλεις όπου θέλεις.' : 'Ξεκίνησε η λήψη της αφίσας PNG.')
+      setMessage(share ? 'Η απευθείας κοινοποίηση δεν υποστηρίχθηκε. Έγινε προσπάθεια λήψης PNG: άνοιξε τις Λήψεις και κοινοποίησε την εικόνα από εκεί.' : 'Έγινε προσπάθεια λήψης PNG. Έλεγξε τις Λήψεις του κινητού.')
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'Η δημιουργία εικόνας απέτυχε.')
     } finally {
